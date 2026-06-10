@@ -1,0 +1,30 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Local data and generated artifacts
+datasets/
+ckpts/
+logs/
+[API]*/
+result/
+*.zip
+*.tar.gz
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
+# Editor and OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+
