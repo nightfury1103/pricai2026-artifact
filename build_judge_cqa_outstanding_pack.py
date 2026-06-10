@@ -1,6 +1,7 @@
 import ast
 import json
 import math
+import os
 import re
 from collections import Counter
 from pathlib import Path
@@ -8,7 +9,7 @@ from pathlib import Path
 import pandas as pd
 
 
-API_DIR = Path("[API] CQA")
+API_DIR = Path(os.environ.get("CQA_API_DIR", "[API] CQA"))
 SOURCES = ["historical", "consensus", "contrastive", "causal", "neutral", "if_else", "comparative"]
 
 BASE_SOURCE_PRIOR = {

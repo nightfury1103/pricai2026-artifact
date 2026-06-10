@@ -1,10 +1,11 @@
 import json
+import os
 from pathlib import Path
 
 import pandas as pd
 
 
-API_DIR = Path("[API] ESNLI")
+API_DIR = Path(os.environ.get("ESNLI_API_DIR", "[API] ESNLI"))
 
 SOURCE_FILES = {
     "signal": API_DIR / "judge_student_signal - full.csv",

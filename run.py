@@ -15,6 +15,8 @@
 
 import argparse
 import ast
+import os
+from pathlib import Path
 
 from datasets import DatasetDict, concatenate_datasets
 from transformers import AutoTokenizer
@@ -24,7 +26,20 @@ from metrics import compute_text_acc, compute_equation_acc, compute_metrics_text
 from train_utils import train_and_evaluate
 
 
+def normalize_optional_llm(llm):
+    if llm is None:
+        return None
+    if str(llm).lower() in {"none", "null", "no", ""}:
+        return None
+    return llm
+
+
 def run(args):
+    args.llm = normalize_optional_llm(args.llm)
+
+    if args.model_type == 'task_prefix' and args.llm is None:
+        raise ValueError('--model_type task_prefix requires --llm palm or --llm gpt')
+
     #### Prepare datasets
     if args.dataset == 'cqa':
         dataset_loader = CQADatasetLoader()
@@ -221,7 +236,7 @@ def run(args):
 
         if args.dataset == 'cqa':
             test = pd.DataFrame(datasets['test'])
-            rationale_path = f'[API] CQA/{args.type_rationale} - full.csv'
+            rationale_path = Path(args.cqa_api_dir) / f'{args.type_rationale} - full.csv'
             rationales = pd.read_csv(rationale_path)[['premise', 'hypothesis', 'rationale', 'LLM_answer']]
             rationales['input'] = rationales.apply(
                 lambda row: cqa_hypothesis_to_input(row['premise'], row['hypothesis']),
@@ -240,7 +255,7 @@ def run(args):
         else:
             test = pd.DataFrame(datasets['test'])
             test = test.set_index('input')
-            rationale_path = f'[API] ESNLI/{args.type_rationale} - full.csv'
+            rationale_path = Path(args.esnli_api_dir) / f'{args.type_rationale} - full.csv'
             rationales = pd.read_csv(rationale_path)[['premise', 'hypothesis', 'rationale', 'LLM_answer']]
             rationales['input'] = rationales['premise'] + '</s>' + rationales['hypothesis']
             print(f"Load data from {rationale_path}")
@@ -317,7 +332,7 @@ if __name__ == '__main__':
     parser.add_argument('--run', type=int, default=0)
     parser.add_argument('--from_pretrained', type=str, default='google/t5-v1_1-base')
     parser.add_argument('--label_type', type=str, default='gt')
-    parser.add_argument('--llm', type=str, default='palm')
+    parser.add_argument('--llm', type=str, default=None, help='LLM rationale source: palm, gpt, or none.')
     parser.add_argument('--max_input_length', type=int, default=1024)
     parser.add_argument('--grad_steps', type=int, default=1)
     parser.add_argument('--local_rank', type=int, default=-1)
@@ -333,6 +348,9 @@ if __name__ == '__main__':
     parser.add_argument('--gold_max_steps', type=int, default=1000)
     parser.add_argument('--gold_lr', type=float, default=1e-5)
     parser.add_argument('--gold_output_suffix', type=str, default='_goldft')
+    parser.add_argument('--save_model_dir', type=str, default='model_path')
+    parser.add_argument('--cqa_api_dir', type=str, default=os.environ.get('CQA_API_DIR', '[API] CQA'))
+    parser.add_argument('--esnli_api_dir', type=str, default=os.environ.get('ESNLI_API_DIR', '[API] ESNLI'))
 
     args = parser.parse_args()
 

@@ -75,6 +75,7 @@ python run.py \
   --dataset cqa \
   --model_type standard \
   --label_type gt \
+  --llm none \
   --batch_size 64
 ```
 
@@ -90,6 +91,8 @@ python run.py \
   --alpha 0.5 \
   --batch_size 64
 ```
+
+Training writes the final saved model to `model_path/<type_rationale>` by default. Override this with `--save_model_dir`.
 
 Standard distillation with LLM labels:
 
@@ -108,6 +111,8 @@ python run.py \
 Build ESNLI judge-derived rationale packs:
 
 ```bash
+export ESNLI_API_DIR="[API] ESNLI"
+export ESNLI_DATASET_DIR="datasets/esnli"
 python build_judge_esnli.py
 python build_boundary_focus_pack.py
 python build_shortcut_focus_pack.py
@@ -117,6 +122,7 @@ python build_hybrid_focus_pack.py
 Build CQA judge-derived rationale packs:
 
 ```bash
+export CQA_API_DIR="[API] CQA"
 python build_judge_cqa_outstanding_pack.py
 ```
 
@@ -135,7 +141,7 @@ Evaluate a saved model:
 
 ```bash
 python evaluate.py \
-  --model-path ckpts/<checkpoint-dir> \
+  --model-path model_path/<type_rationale> \
   --test-data datasets/cqa/cqa_test.json \
   --output-path result/cqa_predictions.csv \
   --batch-size 8
@@ -169,4 +175,3 @@ This code is distributed under the Apache License 2.0. Portions of the training 
   year={2023}
 }
 ```
-

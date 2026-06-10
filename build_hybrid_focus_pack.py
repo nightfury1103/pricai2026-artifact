@@ -1,10 +1,11 @@
 import json
+import os
 from pathlib import Path
 
 import pandas as pd
 
 
-API_DIR = Path("[API] ESNLI")
+API_DIR = Path(os.environ.get("ESNLI_API_DIR", "[API] ESNLI"))
 HYBRID_PATH = API_DIR / "judge_student_multiview_hybrid_balanced - full.csv"
 SUPERCLEAN_PATH = API_DIR / "judge_student_singleview_superclean_balanced - full.csv"
 

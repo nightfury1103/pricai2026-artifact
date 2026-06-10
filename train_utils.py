@@ -137,5 +137,6 @@ def train_and_evaluate(args, run, tokenizer, tokenized_datasets, compute_metrics
         output_type = f'{args.type_rationale}{args.gold_output_suffix}'
         final_trainer = gold_trainer
 
-    output_path = f'../model_path/{output_type}'
+    output_path = os.path.join(args.save_model_dir, output_type)
+    os.makedirs(args.save_model_dir, exist_ok=True)
     final_trainer.save_model(output_path)

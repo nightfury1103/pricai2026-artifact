@@ -1,14 +1,15 @@
 import argparse
 import json
 import math
+import os
 import re
 from pathlib import Path
 
 import pandas as pd
 
 
-API_DIR = Path("[API] ESNLI")
-DATASET_DIR = Path("datasets/esnli")
+API_DIR = Path(os.environ.get("ESNLI_API_DIR", "[API] ESNLI"))
+DATASET_DIR = Path(os.environ.get("ESNLI_DATASET_DIR", "datasets/esnli"))
 DEFAULT_SOURCES = [
     "neutral",
     "contrastive",

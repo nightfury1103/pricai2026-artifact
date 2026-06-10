@@ -15,6 +15,7 @@ ckpts/
 logs/
 [API]*/
 result/
+model_path/
 *.zip
 *.tar.gz
 *.pt
@@ -27,4 +28,3 @@ result/
 .idea/
 *.swp
 *.swo
-
