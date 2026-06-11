@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from config_utils import load_config
 from build_judge_esnli import (
     API_DIR,
     DEFAULT_SOURCES,
@@ -16,35 +17,16 @@ from build_judge_esnli import (
 )
 
 
-BOUNDARY_SOURCE_PRIOR = {
-    "entailment": {
-        "historical": 1.00,
-        "consensus": 0.98,
-        "contrastive": 0.95,
-        "causal": 0.92,
-        "neutral": 0.88,
-        "if_else": 0.74,
-        "comparative": 0.70,
-    },
-    "neutral": {
-        "if_else": 1.00,
-        "comparative": 0.99,
-        "neutral": 0.96,
-        "contrastive": 0.90,
-        "causal": 0.84,
-        "consensus": 0.82,
-        "historical": 0.72,
-    },
-    "contradiction": {
-        "comparative": 1.00,
-        "contrastive": 0.99,
-        "causal": 0.97,
-        "neutral": 0.89,
-        "consensus": 0.84,
-        "historical": 0.74,
-        "if_else": 0.70,
-    },
-}
+PAPER_CONFIG = load_config()
+BOUNDARY_SOURCE_PRIOR = PAPER_CONFIG["source_prior_pi_D"]["values"]
+SCORING_COEFFICIENTS = PAPER_CONFIG["rationale_quality_score"]["table_2_coefficients"]
+SCORING_COMPONENT_MAP = PAPER_CONFIG["rationale_quality_score"]["code_component_mapping"]
+SCORING_SIGNAL_VALUES = PAPER_CONFIG["rationale_quality_score"]["signal_values"]
+ESNLI_BOUNDARY_THRESHOLDS = PAPER_CONFIG["difficulty_band_thresholds"]["esnli_boundary_mix"]
+ESNLI_BOUNDARY_MIX_CONFIG = PAPER_CONFIG["boundary_mix_selection"]["esnli"]
+ESNLI_BOUNDARY_BRIDGE_DATASET_CONFIG = PAPER_CONFIG["boundary_mix_selection"]["esnli_bridge"]
+ESNLI_BOUNDARY_SPECIALIST_CONFIG = PAPER_CONFIG["boundary_mix_selection"]["esnli_specialist"]
+ESNLI_BOUNDARY_BRIDGE_CONFIG = PAPER_CONFIG["boundary_bridge_selection"]["esnli"]
 
 LABELS = ["entailment", "neutral", "contradiction"]
 
@@ -103,19 +85,23 @@ def candidate_quality(
     source_prior = BOUNDARY_SOURCE_PRIOR.get(training_label, {}).get(candidate["source"], 0.0)
     teaching_hits = sum(1 for cue in LABEL_TEACHING_CUES.get(training_label, ()) if cue in rationale_lower)
     explicit_label = 1.0 if training_label in rationale_lower else 0.0
-    format_bonus = 0.25 if "the correct answer" in rationale_lower or "so the answer is" in rationale_lower else 0.0
-    brevity = 0.25 if 10 <= word_count <= 96 else (-0.15 if word_count > 128 else 0.0)
+    format_bonus = SCORING_SIGNAL_VALUES["format_positive"] if "the correct answer" in rationale_lower or "so the answer is" in rationale_lower else 0.0
+    brevity = (
+        SCORING_SIGNAL_VALUES["brief_positive"]
+        if SCORING_SIGNAL_VALUES["brief_min_words"] <= word_count <= SCORING_SIGNAL_VALUES["brief_ideal_word_max"]
+        else (SCORING_SIGNAL_VALUES["brief_long_penalty"] if word_count > SCORING_SIGNAL_VALUES["brief_hard_word_max"] else 0.0)
+    )
     agreement_ratio = agreement_count / max(1, total_candidates)
     contributions = {
-        "source": source_prior,
-        "ground": 0.55 * overlap_score,
-        "cue": 0.22 * teaching_hits,
-        "explicit": 0.20 * explicit_label,
-        "format": format_bonus,
-        "brief": brevity,
-        "agreement_count": 0.12 * agreement_count,
-        "agreement_ratio": 0.08 * agreement_ratio,
-        "margin": 0.03 * vote_margin,
+        "source": SCORING_COEFFICIENTS["alpha"] * source_prior,
+        "ground": SCORING_COEFFICIENTS["beta"] * overlap_score,
+        "cue": SCORING_COEFFICIENTS["gamma"] * teaching_hits,
+        "explicit": SCORING_COEFFICIENTS["delta"] * explicit_label,
+        "format": SCORING_COEFFICIENTS["eta"] * format_bonus,
+        "brief": SCORING_COEFFICIENTS["lambda"] * brevity,
+        "agreement_count": SCORING_COEFFICIENTS["mu"] * agreement_count,
+        "agreement_ratio": SCORING_COEFFICIENTS["nu"] * agreement_ratio,
+        "margin": SCORING_COEFFICIENTS["rho"] * vote_margin,
     }
     score = sum(
         contribution
@@ -135,7 +121,7 @@ def choose_boundary_partner(primary, matching_candidates):
         if candidate["source"] == primary["source"]:
             continue
         similarity = rationale_jaccard(primary["rationale"], candidate["rationale"])
-        if similarity >= 0.76:
+        if similarity >= ESNLI_BOUNDARY_BRIDGE_CONFIG["similarity_limit"]:
             continue
         alternatives.append((1.0 - similarity, candidate))
     if not alternatives:
@@ -195,7 +181,7 @@ def collect_examples(gold_records=None, candidate_tables=None, disabled_componen
         vote_margin = winner_score - runner_up_score
         paper_label = normalize_label(gold["gold_label"])
 
-        if paper_label in LABELS and (paper_label == voted_label or vote_margin < 1.55):
+        if paper_label in LABELS and (paper_label == voted_label or vote_margin < ESNLI_BOUNDARY_THRESHOLDS["label_override_vote_margin"]):
             training_label = paper_label
         elif voted_label in LABELS:
             training_label = voted_label
@@ -231,9 +217,9 @@ def collect_examples(gold_records=None, candidate_tables=None, disabled_componen
         matching.sort(key=lambda cand: cand["quality_score"], reverse=True)
         best = matching[0]
 
-        if vote_margin >= 2.1 and label_counts.get(training_label, 0) >= 5:
+        if vote_margin >= ESNLI_BOUNDARY_THRESHOLDS["easy"]["tau_easy_m"] and label_counts.get(training_label, 0) >= ESNLI_BOUNDARY_THRESHOLDS["easy"]["tau_easy_a"]:
             boundary_band = "easy"
-        elif vote_margin >= 1.1 and label_counts.get(training_label, 0) >= 2:
+        elif vote_margin >= ESNLI_BOUNDARY_THRESHOLDS["boundary"]["tau_boundary_m"] and label_counts.get(training_label, 0) >= ESNLI_BOUNDARY_THRESHOLDS["boundary"]["tau_boundary_a"]:
             boundary_band = "boundary"
         else:
             boundary_band = "hard"
@@ -321,21 +307,21 @@ def main():
     datasets = {
         "judge_student_boundary_mix_balanced": balance_dataset(
             rows,
-            cap_per_label=3200,
-            allowed_bands={"easy", "boundary"},
-            max_per_example=1,
+            cap_per_label=ESNLI_BOUNDARY_MIX_CONFIG["cap_per_label"],
+            allowed_bands=set(ESNLI_BOUNDARY_MIX_CONFIG["allowed_bands"]),
+            max_per_example=ESNLI_BOUNDARY_MIX_CONFIG["max_per_example"],
         ),
         "judge_student_boundary_bridge_balanced": balance_dataset(
             rows,
-            cap_per_label=4200,
-            allowed_bands={"easy", "boundary", "bridge"},
-            max_per_example=2,
+            cap_per_label=ESNLI_BOUNDARY_BRIDGE_DATASET_CONFIG["cap_per_label"],
+            allowed_bands=set(ESNLI_BOUNDARY_BRIDGE_DATASET_CONFIG["allowed_bands"]),
+            max_per_example=ESNLI_BOUNDARY_BRIDGE_DATASET_CONFIG["max_per_example"],
         ),
         "judge_student_boundary_specialist_balanced": balance_dataset(
-            rows[rows["judge_source"].isin({"historical", "contrastive", "comparative", "if_else", "consensus"})],
-            cap_per_label=3000,
-            allowed_bands={"boundary", "bridge"},
-            max_per_example=2,
+            rows[rows["judge_source"].isin(set(ESNLI_BOUNDARY_SPECIALIST_CONFIG["sources"]))],
+            cap_per_label=ESNLI_BOUNDARY_SPECIALIST_CONFIG["cap_per_label"],
+            allowed_bands=set(ESNLI_BOUNDARY_SPECIALIST_CONFIG["allowed_bands"]),
+            max_per_example=ESNLI_BOUNDARY_SPECIALIST_CONFIG["max_per_example"],
         ),
     }
 

@@ -50,6 +50,16 @@
       "A_i": "agreement_count",
       "R_i": "agreement_count / total_candidates",
       "M_i": "vote_margin"
+    },
+    "signal_values": {
+      "format_positive": 0.25,
+      "brief_min_words": 10,
+      "brief_ideal_word_max": 96,
+      "brief_hard_word_max": 128,
+      "brief_positive": 0.25,
+      "brief_long_penalty": -0.15,
+      "cqa_format_weight": 0.08,
+      "cqa_cue_weight": 0.08
     }
   },
   "source_prior_pi_D": {
@@ -103,7 +113,8 @@
       "retained_bands_for_boundary_mix": [
         "easy",
         "boundary"
-      ]
+      ],
+      "label_override_vote_margin": 1.55
     },
     "cqa_boundary_mix": {
       "implementation_file": "build_judge_cqa_outstanding_pack.py",
@@ -142,6 +153,32 @@
         "easy",
         "boundary"
       ]
+    },
+    "esnli_bridge": {
+      "implementation_file": "build_boundary_focus_pack.py",
+      "cap_per_label": 4200,
+      "max_per_example": 2,
+      "allowed_bands": [
+        "easy",
+        "boundary",
+        "bridge"
+      ]
+    },
+    "esnli_specialist": {
+      "implementation_file": "build_boundary_focus_pack.py",
+      "cap_per_label": 3000,
+      "max_per_example": 2,
+      "allowed_bands": [
+        "boundary",
+        "bridge"
+      ],
+      "sources": [
+        "historical",
+        "contrastive",
+        "comparative",
+        "if_else",
+        "consensus"
+      ]
     }
   },
   "cqa_boundary_scoring_profile": {
@@ -172,7 +209,8 @@
     "agreement_ratio_weight": 0.12,
     "preferred_source_bonus": 0.12,
     "brevity_positive": 0.25,
-    "brevity_long_penalty": -0.18
+    "brevity_long_penalty": -0.18,
+    "brief_min_words": 10
   },
   "student_training_loss": {
     "paper_equation": "L = lambda*L_label + (1-lambda)*L_rationale",
@@ -197,12 +235,21 @@
     "eval_steps": 250,
     "batch_size": 64,
     "optimizer_name": "AdamW",
-    "learning_rate": 0.00005,
+    "learning_rate": 5e-05,
     "max_input_length": 1024,
     "grad_steps": 1,
     "gen_max_len": 64,
     "gold_finetune": false,
     "gold_max_steps": 1000,
-    "gold_learning_rate": 0.00001
+    "gold_learning_rate": 1e-05
+  },
+  "boundary_bridge_selection": {
+    "esnli": {
+      "similarity_limit": 0.76
+    },
+    "cqa": {
+      "similarity_limit": 0.76,
+      "max_secondary_gap": 0.5
+    }
   }
 }

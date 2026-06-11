@@ -8,19 +8,19 @@ from pathlib import Path
 
 import pandas as pd
 
+from config_utils import load_config
+
 
 API_DIR = Path(os.environ.get("CQA_API_DIR", "[API] CQA"))
 SOURCES = ["historical", "consensus", "contrastive", "causal", "neutral", "if_else", "comparative"]
 
-BASE_SOURCE_PRIOR = {
-    "causal": 1.00,
-    "if_else": 0.99,
-    "neutral": 0.98,
-    "contrastive": 0.975,
-    "historical": 0.94,
-    "consensus": 0.84,
-    "comparative": 0.80,
-}
+PAPER_CONFIG = load_config()
+CQA_BOUNDARY_PROFILE = PAPER_CONFIG["cqa_boundary_scoring_profile"].copy()
+CQA_BOUNDARY_PROFILE["preferred_sources"] = set(CQA_BOUNDARY_PROFILE["preferred_sources"])
+BASE_SOURCE_PRIOR = CQA_BOUNDARY_PROFILE["source_prior"]
+CQA_BOUNDARY_THRESHOLDS = PAPER_CONFIG["difficulty_band_thresholds"]["cqa_boundary_mix"]
+CQA_BOUNDARY_SELECTION_CONFIG = PAPER_CONFIG["boundary_mix_selection"]["cqa"]
+CQA_BOUNDARY_BRIDGE_CONFIG = PAPER_CONFIG["boundary_bridge_selection"]["cqa"]
 
 SUPERCLEAN_SOURCE_PRIOR = {
     "causal": 1.00,
@@ -242,18 +242,18 @@ def score_candidate(
     explicit_answer = 1.0 if gold_label and gold_label in rationale_lower else 0.0
     cue_hits = sum(1 for cue in REASONING_CUES if cue in rationale_lower)
     format_hits = sum(1 for cue in FORMAT_CUES if cue in rationale_lower)
-    brevity = 0.25 if 10 <= word_count <= profile["ideal_word_max"] else (-0.18 if word_count > profile["hard_word_max"] else 0.0)
+    brevity = profile["brevity_positive"] if profile["brief_min_words"] <= word_count <= profile["ideal_word_max"] else (profile["brevity_long_penalty"] if word_count > profile["hard_word_max"] else 0.0)
     agreement_ratio = agreement_count / max(1, total_candidates)
 
     contributions = {
-        "source": source_prior.get(candidate["source"], 0.0) + 0.12 * (candidate["source"] in profile["preferred_sources"]),
+        "source": source_prior.get(candidate["source"], 0.0) + profile["preferred_source_bonus"] * (candidate["source"] in profile["preferred_sources"]),
         "ground": profile["overlap_weight"] * overlap,
-        "cue": 0.08 * cue_hits,
-        "explicit": 0.20 * explicit_answer,
-        "format": 0.08 * format_hits,
+        "cue": profile["cue_weight"] * cue_hits,
+        "explicit": profile["explicit_weight"] * explicit_answer,
+        "format": profile["format_weight"] * format_hits,
         "brief": brevity,
         "agreement_count": profile["agreement_weight"] * agreement_count,
-        "agreement_ratio": 0.12 * agreement_ratio,
+        "agreement_ratio": profile["agreement_ratio_weight"] * agreement_ratio,
         "margin": profile["margin_weight"] * vote_margin,
     }
     score = sum(
@@ -461,14 +461,7 @@ def build_boundary_rows(gold_records, candidate_tables, disabled_components=None
                 label_counts.get(gold["gold_label"], 0),
                 len(candidates),
                 BASE_SOURCE_PRIOR,
-                {
-                    "ideal_word_max": 96,
-                    "hard_word_max": 128,
-                    "overlap_weight": 0.62,
-                    "agreement_weight": 0.18,
-                    "margin_weight": 0.10,
-                    "preferred_sources": {"contrastive", "if_else", "causal", "neutral"},
-                },
+                CQA_BOUNDARY_PROFILE,
                 disabled_components=disabled_components,
             )
             matching.append(enriched)
@@ -477,9 +470,9 @@ def build_boundary_rows(gold_records, candidate_tables, disabled_components=None
         matching.sort(key=lambda item: item["judge_score"], reverse=True)
         best = matching[0]
 
-        if vote_margin >= 2.4 and label_counts.get(gold["gold_label"], 0) >= 5:
+        if vote_margin >= CQA_BOUNDARY_THRESHOLDS["easy"]["tau_easy_m"] and label_counts.get(gold["gold_label"], 0) >= CQA_BOUNDARY_THRESHOLDS["easy"]["tau_easy_a"]:
             boundary_band = "easy"
-        elif vote_margin >= 1.6 and label_counts.get(gold["gold_label"], 0) >= 3:
+        elif vote_margin >= CQA_BOUNDARY_THRESHOLDS["boundary"]["tau_boundary_m"] and label_counts.get(gold["gold_label"], 0) >= CQA_BOUNDARY_THRESHOLDS["boundary"]["tau_boundary_a"]:
             boundary_band = "boundary"
         else:
             boundary_band = "hard"
@@ -490,10 +483,7 @@ def build_boundary_rows(gold_records, candidate_tables, disabled_components=None
         partner = choose_secondary(
             best,
             matching,
-            {
-                "similarity_limit": 0.76,
-                "max_secondary_gap": 0.5,
-            },
+            CQA_BOUNDARY_BRIDGE_CONFIG,
         )
         if partner is not None and boundary_band != "hard":
             append_row(rows, gold, partner, voted_label, winner_score, vote_margin, label_counts, view_rank=2)

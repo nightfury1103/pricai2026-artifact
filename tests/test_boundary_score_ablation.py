@@ -56,6 +56,44 @@ class BoundaryScoreComponentTest(unittest.TestCase):
             )
 
 
+class PaperConfigIntegrationTest(unittest.TestCase):
+    def test_esnli_boundary_scoring_uses_paper_config_objects(self):
+        config = boundary.PAPER_CONFIG
+
+        self.assertEqual(
+            boundary.SCORING_COEFFICIENTS,
+            config["rationale_quality_score"]["table_2_coefficients"],
+        )
+        self.assertEqual(
+            boundary.BOUNDARY_SOURCE_PRIOR,
+            config["source_prior_pi_D"]["values"],
+        )
+        self.assertEqual(
+            boundary.ESNLI_BOUNDARY_THRESHOLDS,
+            config["difficulty_band_thresholds"]["esnli_boundary_mix"],
+        )
+        self.assertEqual(
+            boundary.ESNLI_BOUNDARY_MIX_CONFIG,
+            config["boundary_mix_selection"]["esnli"],
+        )
+
+    def test_cqa_boundary_scoring_uses_paper_config_objects(self):
+        config = cqa.PAPER_CONFIG
+
+        self.assertEqual(
+            cqa.BASE_SOURCE_PRIOR,
+            config["cqa_boundary_scoring_profile"]["source_prior"],
+        )
+        self.assertEqual(
+            cqa.CQA_BOUNDARY_PROFILE["cue_weight"],
+            config["cqa_boundary_scoring_profile"]["cue_weight"],
+        )
+        self.assertEqual(
+            cqa.CQA_BOUNDARY_THRESHOLDS,
+            config["difficulty_band_thresholds"]["cqa_boundary_mix"],
+        )
+
+
 class BoundarySelectionChangeTest(unittest.TestCase):
     @staticmethod
     def row(example, rationale, label="entailment", source="causal"):
@@ -112,14 +150,7 @@ class CqaBoundaryScoreComponentTest(unittest.TestCase):
             "hypothesis": "['tree', 'ocean', 'desk', 'road', 'car']",
             "rationale": "The correct answer is tree because birds build nests in trees.",
         }
-        self.profile = {
-            "ideal_word_max": 96,
-            "hard_word_max": 128,
-            "overlap_weight": 0.62,
-            "agreement_weight": 0.18,
-            "margin_weight": 0.10,
-            "preferred_sources": {"causal", "if_else", "neutral", "contrastive"},
-        }
+        self.profile = cqa.CQA_BOUNDARY_PROFILE
 
     def test_cqa_disabling_each_component_removes_only_its_weighted_contribution(self):
         full_score, contributions = cqa.score_candidate(
@@ -171,12 +202,12 @@ class CqaBoundaryScoreComponentTest(unittest.TestCase):
             cqa.BASE_SOURCE_PRIOR[self.candidate["source"]]
             + self.profile["overlap_weight"] * overlap
             + self.profile["agreement_weight"] * 5
-            + 0.12 * (5 / 7)
+            + self.profile["agreement_ratio_weight"] * (5 / 7)
             + self.profile["margin_weight"] * 2.5
-            + 0.20
-            + 0.08 * legacy_cue_hits
-            + 0.12
-            + 0.25
+            + self.profile["explicit_weight"]
+            + self.profile["cue_weight"] * legacy_cue_hits
+            + self.profile["preferred_source_bonus"]
+            + self.profile["brevity_positive"]
         )
 
         self.assertAlmostEqual(full_score, expected_legacy_score)
