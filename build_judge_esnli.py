@@ -7,22 +7,38 @@ from pathlib import Path
 
 import pandas as pd
 
+from config_utils import load_config
+
 
 API_DIR = Path(os.environ.get("ESNLI_API_DIR", "[API] ESNLI"))
 DATASET_DIR = Path(os.environ.get("ESNLI_DATASET_DIR", "datasets/esnli"))
-DEFAULT_SOURCES = [
-    "neutral",
-    "contrastive",
-    "historical",
-    "comparative",
-    "causal",
-    "consensus",
-    "if_else",
-]
-
-THESIS_PREFERRED_SOURCES = ["neutral", "contrastive", "historical"]
-AGREEMENT_PREFERRED_SOURCES = ["neutral", "contrastive", "historical", "comparative"]
-GUARDED_PREFERRED_SOURCES = ["neutral", "contrastive", "historical"]
+PAPER_CONFIG = load_config()
+DEFAULT_SOURCES = PAPER_CONFIG["esnli_sources"]
+ESNLI_SOURCE_PRIORS = PAPER_CONFIG["esnli_source_priors"]
+ESNLI_PREFERRED_SOURCES = PAPER_CONFIG["esnli_preferred_sources"]
+ESNLI_LENGTH_SCORE_CONFIG = PAPER_CONFIG["esnli_length_score"]
+ESNLI_COMMON_SCORING = PAPER_CONFIG["esnli_common_scoring"]
+ESNLI_SCORING_STRATEGIES = PAPER_CONFIG["esnli_scoring_strategies"]
+ESNLI_SECONDARY_MULTIVIEW = PAPER_CONFIG["esnli_secondary_multiview"]
+ESNLI_TRAINING_VOTE_MARGIN_THRESHOLDS = PAPER_CONFIG["esnli_training_vote_margin_thresholds"]
+ESNLI_KEEP_RULES = PAPER_CONFIG["esnli_keep_rules"]
+THESIS_PREFERRED_SOURCES = ESNLI_PREFERRED_SOURCES["THESIS_PREFERRED_SOURCES"]
+AGREEMENT_PREFERRED_SOURCES = ESNLI_PREFERRED_SOURCES["AGREEMENT_PREFERRED_SOURCES"]
+GUARDED_PREFERRED_SOURCES = ESNLI_PREFERRED_SOURCES["GUARDED_PREFERRED_SOURCES"]
+TYPE_PRIOR = ESNLI_SOURCE_PRIORS["TYPE_PRIOR"]
+THESIS_TYPE_PRIOR = ESNLI_SOURCE_PRIORS["THESIS_TYPE_PRIOR"]
+AGREEMENT_TYPE_PRIOR = ESNLI_SOURCE_PRIORS["AGREEMENT_TYPE_PRIOR"]
+GUARDED_TYPE_PRIOR = ESNLI_SOURCE_PRIORS["GUARDED_TYPE_PRIOR"]
+BALANCED_TYPE_PRIOR = ESNLI_SOURCE_PRIORS["BALANCED_TYPE_PRIOR"]
+LABEL_PRIORITY_TYPE_PRIOR = ESNLI_SOURCE_PRIORS["LABEL_PRIORITY_TYPE_PRIOR"]
+LABEL_EXPERT_TYPE_PRIOR = ESNLI_SOURCE_PRIORS["LABEL_EXPERT_TYPE_PRIOR"]
+STUDENT_SIGNAL_TYPE_PRIOR = ESNLI_SOURCE_PRIORS["STUDENT_SIGNAL_TYPE_PRIOR"]
+ELITE_MULTIVIEW_TYPE_PRIOR = ESNLI_SOURCE_PRIORS["ELITE_MULTIVIEW_TYPE_PRIOR"]
+HARDCLEAN_MULTIVIEW_TYPE_PRIOR = ESNLI_SOURCE_PRIORS["HARDCLEAN_MULTIVIEW_TYPE_PRIOR"]
+HYBRID_MULTIVIEW_TYPE_PRIOR = ESNLI_SOURCE_PRIORS["HYBRID_MULTIVIEW_TYPE_PRIOR"]
+SINGLEVIEW_SUPERCLEAN_TYPE_PRIOR = ESNLI_SOURCE_PRIORS["SINGLEVIEW_SUPERCLEAN_TYPE_PRIOR"]
+SOURCEBLEND_MULTIVIEW_TYPE_PRIOR = ESNLI_SOURCE_PRIORS["SOURCEBLEND_MULTIVIEW_TYPE_PRIOR"]
+SINGLEVIEW_DIVERSE_TYPE_PRIOR = ESNLI_SOURCE_PRIORS["SINGLEVIEW_DIVERSE_TYPE_PRIOR"]
 
 LABEL_NORMALIZATION = {
     "entailment": "entailment",
@@ -30,336 +46,6 @@ LABEL_NORMALIZATION = {
     "neutral": "neutral",
     "contradiction": "contradiction",
     "contradicted": "contradiction",
-}
-
-TYPE_PRIOR = {
-    "neutral": 1.00,
-    "contrastive": 0.95,
-    "historical": 0.90,
-    "comparative": 0.82,
-    "causal": 0.78,
-    "consensus": 0.74,
-    "if_else": 0.70,
-    "paper": 0.55,
-}
-
-THESIS_TYPE_PRIOR = {
-    "neutral": 1.00,
-    "contrastive": 0.98,
-    "historical": 0.96,
-    "comparative": 0.55,
-    "causal": 0.52,
-    "consensus": 0.48,
-    "if_else": 0.42,
-    "paper": 0.35,
-}
-
-AGREEMENT_TYPE_PRIOR = {
-    "neutral": 1.00,
-    "contrastive": 0.96,
-    "historical": 0.92,
-    "comparative": 0.86,
-    "causal": 0.72,
-    "consensus": 0.70,
-    "if_else": 0.66,
-    "paper": 0.20,
-}
-
-GUARDED_TYPE_PRIOR = {
-    "neutral": 1.00,
-    "contrastive": 0.97,
-    "historical": 0.94,
-    "comparative": 0.80,
-    "causal": 0.68,
-    "consensus": 0.64,
-    "if_else": 0.60,
-    "paper": 0.0,
-}
-
-BALANCED_TYPE_PRIOR = {
-    "neutral": 1.00,
-    "contrastive": 0.98,
-    "historical": 0.96,
-    "comparative": 0.94,
-    "causal": 0.88,
-    "consensus": 0.82,
-    "if_else": 0.80,
-    "paper": 0.0,
-}
-
-LABEL_PRIORITY_TYPE_PRIOR = {
-    "neutral": 1.00,
-    "contrastive": 0.98,
-    "historical": 0.95,
-    "comparative": 0.83,
-    "causal": 0.76,
-    "consensus": 0.73,
-    "if_else": 0.68,
-    "paper": 0.30,
-}
-
-LABEL_EXPERT_TYPE_PRIOR = {
-    "entailment": {
-        "historical": 1.00,
-        "consensus": 0.99,
-        "contrastive": 0.97,
-        "causal": 0.93,
-        "neutral": 0.91,
-        "if_else": 0.87,
-        "comparative": 0.84,
-        "paper": 0.0,
-    },
-    "neutral": {
-        "if_else": 1.00,
-        "comparative": 0.98,
-        "neutral": 0.96,
-        "causal": 0.90,
-        "consensus": 0.88,
-        "contrastive": 0.84,
-        "historical": 0.78,
-        "paper": 0.0,
-    },
-    "contradiction": {
-        "comparative": 1.00,
-        "contrastive": 0.99,
-        "causal": 0.97,
-        "neutral": 0.94,
-        "consensus": 0.92,
-        "historical": 0.87,
-        "if_else": 0.84,
-        "paper": 0.0,
-    },
-}
-
-STUDENT_SIGNAL_TYPE_PRIOR = {
-    "entailment": {
-        "historical": 1.00,
-        "consensus": 0.99,
-        "contrastive": 0.96,
-        "neutral": 0.92,
-        "causal": 0.90,
-        "if_else": 0.85,
-        "comparative": 0.82,
-        "paper": 0.0,
-    },
-    "neutral": {
-        "if_else": 1.00,
-        "neutral": 0.98,
-        "comparative": 0.96,
-        "contrastive": 0.88,
-        "causal": 0.86,
-        "consensus": 0.82,
-        "historical": 0.78,
-        "paper": 0.0,
-    },
-    "contradiction": {
-        "comparative": 1.00,
-        "contrastive": 0.99,
-        "causal": 0.97,
-        "neutral": 0.92,
-        "consensus": 0.88,
-        "historical": 0.84,
-        "if_else": 0.82,
-        "paper": 0.0,
-    },
-}
-
-ELITE_MULTIVIEW_TYPE_PRIOR = {
-    "entailment": {
-        "historical": 1.00,
-        "consensus": 0.99,
-        "contrastive": 0.98,
-        "causal": 0.94,
-        "neutral": 0.92,
-        "if_else": 0.84,
-        "comparative": 0.80,
-        "paper": 0.0,
-    },
-    "neutral": {
-        "if_else": 1.00,
-        "comparative": 0.99,
-        "neutral": 0.98,
-        "contrastive": 0.90,
-        "causal": 0.87,
-        "consensus": 0.84,
-        "historical": 0.72,
-        "paper": 0.0,
-    },
-    "contradiction": {
-        "comparative": 1.00,
-        "contrastive": 1.00,
-        "causal": 0.98,
-        "neutral": 0.92,
-        "consensus": 0.88,
-        "historical": 0.80,
-        "if_else": 0.78,
-        "paper": 0.0,
-    },
-}
-
-HARDCLEAN_MULTIVIEW_TYPE_PRIOR = {
-    "entailment": {
-        "historical": 1.00,
-        "contrastive": 0.99,
-        "consensus": 0.97,
-        "causal": 0.93,
-        "neutral": 0.90,
-        "if_else": 0.80,
-        "comparative": 0.76,
-        "paper": 0.0,
-    },
-    "neutral": {
-        "if_else": 1.00,
-        "comparative": 0.99,
-        "neutral": 0.97,
-        "contrastive": 0.92,
-        "causal": 0.85,
-        "consensus": 0.82,
-        "historical": 0.68,
-        "paper": 0.0,
-    },
-    "contradiction": {
-        "comparative": 1.00,
-        "contrastive": 1.00,
-        "causal": 0.98,
-        "neutral": 0.90,
-        "consensus": 0.86,
-        "historical": 0.78,
-        "if_else": 0.74,
-        "paper": 0.0,
-    },
-}
-
-HYBRID_MULTIVIEW_TYPE_PRIOR = {
-    "entailment": {
-        "historical": 1.00,
-        "contrastive": 0.99,
-        "consensus": 0.98,
-        "causal": 0.94,
-        "neutral": 0.92,
-        "if_else": 0.78,
-        "comparative": 0.74,
-        "paper": 0.0,
-    },
-    "neutral": {
-        "if_else": 1.00,
-        "comparative": 0.99,
-        "neutral": 0.98,
-        "contrastive": 0.93,
-        "causal": 0.84,
-        "consensus": 0.82,
-        "historical": 0.66,
-        "paper": 0.0,
-    },
-    "contradiction": {
-        "comparative": 1.00,
-        "contrastive": 1.00,
-        "causal": 0.98,
-        "neutral": 0.91,
-        "consensus": 0.85,
-        "historical": 0.77,
-        "if_else": 0.72,
-        "paper": 0.0,
-    },
-}
-
-SINGLEVIEW_SUPERCLEAN_TYPE_PRIOR = {
-    "entailment": {
-        "historical": 1.00,
-        "consensus": 0.99,
-        "contrastive": 0.97,
-        "causal": 0.95,
-        "neutral": 0.90,
-        "if_else": 0.74,
-        "comparative": 0.70,
-        "paper": 0.0,
-    },
-    "neutral": {
-        "if_else": 1.00,
-        "comparative": 0.99,
-        "neutral": 0.98,
-        "contrastive": 0.92,
-        "causal": 0.82,
-        "consensus": 0.80,
-        "historical": 0.62,
-        "paper": 0.0,
-    },
-    "contradiction": {
-        "comparative": 1.00,
-        "contrastive": 1.00,
-        "causal": 0.98,
-        "neutral": 0.90,
-        "consensus": 0.84,
-        "historical": 0.76,
-        "if_else": 0.70,
-        "paper": 0.0,
-    },
-}
-
-SOURCEBLEND_MULTIVIEW_TYPE_PRIOR = {
-    "entailment": {
-        "historical": 1.00,
-        "contrastive": 0.98,
-        "consensus": 0.97,
-        "causal": 0.95,
-        "neutral": 0.93,
-        "if_else": 0.88,
-        "comparative": 0.86,
-        "paper": 0.0,
-    },
-    "neutral": {
-        "if_else": 1.00,
-        "comparative": 0.99,
-        "neutral": 0.98,
-        "contrastive": 0.94,
-        "causal": 0.92,
-        "consensus": 0.90,
-        "historical": 0.84,
-        "paper": 0.0,
-    },
-    "contradiction": {
-        "comparative": 1.00,
-        "contrastive": 0.99,
-        "causal": 0.97,
-        "neutral": 0.94,
-        "consensus": 0.92,
-        "historical": 0.88,
-        "if_else": 0.84,
-        "paper": 0.0,
-    },
-}
-
-SINGLEVIEW_DIVERSE_TYPE_PRIOR = {
-    "entailment": {
-        "historical": 1.00,
-        "consensus": 0.98,
-        "contrastive": 0.97,
-        "causal": 0.94,
-        "neutral": 0.92,
-        "if_else": 0.84,
-        "comparative": 0.82,
-        "paper": 0.0,
-    },
-    "neutral": {
-        "if_else": 1.00,
-        "comparative": 0.99,
-        "neutral": 0.98,
-        "contrastive": 0.94,
-        "causal": 0.89,
-        "consensus": 0.88,
-        "historical": 0.80,
-        "paper": 0.0,
-    },
-    "contradiction": {
-        "comparative": 1.00,
-        "contrastive": 1.00,
-        "causal": 0.98,
-        "neutral": 0.93,
-        "consensus": 0.90,
-        "historical": 0.84,
-        "if_else": 0.82,
-        "paper": 0.0,
-    },
 }
 
 REASONING_CUES = (
@@ -446,6 +132,61 @@ def rationale_jaccard(left, right):
     return len(left_tokens & right_tokens) / len(union)
 
 
+def piecewise_score(word_count, schedule):
+    for rule in schedule:
+        if "max_words" not in rule or word_count <= rule["max_words"]:
+            return rule["score"]
+    return schedule[-1]["score"]
+
+
+def preferred_sources(name):
+    if not name:
+        return ()
+    return ESNLI_PREFERRED_SOURCES[name]
+
+
+def word_condition_bonus(word_count, config):
+    if not config:
+        return 0.0
+    min_words = config.get("min_words", 0)
+    max_words = config.get("max_words")
+    if max_words is not None and min_words <= word_count <= max_words:
+        return config["positive"]
+    if "long_word_min" in config and word_count >= config["long_word_min"]:
+        return config["long_penalty"]
+    return 0.0
+
+
+def explicit_label_count(candidate, training_label):
+    return candidate["rationale"].lower().count(training_label)
+
+
+def keep_clause_passes(clause, matched_count, support_margin, best, high_quality_source, training_label):
+    if matched_count < clause.get("min_matched_count", 0):
+        return False
+    if support_margin < clause.get("min_support_margin", float("-inf")):
+        return False
+    if best["judge_score"] < clause.get("min_judge_score", float("-inf")):
+        return False
+    if clause.get("require_high_quality_source") and not high_quality_source:
+        return False
+    if clause.get("require_explicit_label_support") and explicit_label_count(best, training_label) < 1:
+        return False
+    if "word_count_min" in clause and best["word_count"] < clause["word_count_min"]:
+        return False
+    if "word_count_max" in clause and best["word_count"] > clause["word_count_max"]:
+        return False
+    return True
+
+
+def keep_rule_passes(strategy, matched_count, support_margin, best, high_quality_source, training_label):
+    rule = ESNLI_KEEP_RULES.get(strategy, ESNLI_KEEP_RULES["default"])
+    return any(
+        keep_clause_passes(clause, matched_count, support_margin, best, high_quality_source, training_label)
+        for clause in rule["clauses"]
+    )
+
+
 def choose_secondary_multiview(primary, matching_candidates, training_label, strategy):
     alternatives = []
     if strategy == "student_multiview_hardclean_balanced":
@@ -454,8 +195,11 @@ def choose_secondary_multiview(primary, matching_candidates, training_label, str
         label_prior = HYBRID_MULTIVIEW_TYPE_PRIOR.get(training_label, {})
     elif strategy == "student_multiview_sourceblend_balanced":
         label_prior = SOURCEBLEND_MULTIVIEW_TYPE_PRIOR.get(training_label, {})
-    else:
+    elif strategy == "student_multiview_elite":
         label_prior = ELITE_MULTIVIEW_TYPE_PRIOR.get(training_label, {})
+    else:
+        label_prior = STUDENT_SIGNAL_TYPE_PRIOR.get(training_label, {})
+    selection_config = ESNLI_SECONDARY_MULTIVIEW.get(strategy, ESNLI_SECONDARY_MULTIVIEW["default"])
     for candidate in matching_candidates:
         if candidate is primary:
             continue
@@ -464,80 +208,23 @@ def choose_secondary_multiview(primary, matching_candidates, training_label, str
         if normalize_text(candidate["rationale"]).lower() == normalize_text(primary["rationale"]).lower():
             continue
         similarity = rationale_jaccard(primary["rationale"], candidate["rationale"])
-        if strategy == "student_multiview_hardclean_balanced":
-            similarity_limit = 0.68
-        elif strategy == "student_multiview_hybrid_balanced":
-            similarity_limit = 0.74
-        elif strategy == "student_multiview_sourceblend_balanced":
-            similarity_limit = 0.70
-        elif strategy == "student_multiview_elite":
-            similarity_limit = 0.72
-        else:
-            similarity_limit = 0.82
-        if similarity >= similarity_limit:
+        if similarity >= selection_config["similarity_limit"]:
             continue
-        if strategy == "student_multiview_hardclean_balanced":
-            if candidate.get("agreement_count", 0) < 4:
-                continue
-            if candidate.get("label_support_margin", 0.0) < 1.25:
-                continue
-            if candidate["judge_score"] < primary["judge_score"] - 0.35:
-                continue
-            if candidate["judge_score"] < 19.0:
-                continue
-            if not (10 <= candidate.get("word_count", 0) <= 96):
-                continue
-            source_prior = label_prior.get(candidate["source"], 0.0)
-            if source_prior < 0.9:
-                continue
-        elif strategy == "student_multiview_hybrid_balanced":
-            if candidate.get("agreement_count", 0) < 3:
-                continue
-            if candidate.get("label_support_margin", 0.0) < 1.05:
-                continue
-            if candidate["judge_score"] < primary["judge_score"] - 0.5:
-                continue
-            if candidate["judge_score"] < 18.5:
-                continue
-            if not (10 <= candidate.get("word_count", 0) <= 110):
-                continue
-            source_prior = label_prior.get(candidate["source"], 0.0)
-            if source_prior < 0.82:
-                continue
-        elif strategy == "student_multiview_sourceblend_balanced":
-            if candidate.get("agreement_count", 0) < 3:
-                continue
-            if candidate.get("label_support_margin", 0.0) < 1.1:
-                continue
-            if candidate["judge_score"] < primary["judge_score"] - 0.45:
-                continue
-            if candidate["judge_score"] < 18.7:
-                continue
-            if not (10 <= candidate.get("word_count", 0) <= 112):
-                continue
-            source_prior = label_prior.get(candidate["source"], 0.0)
-            if source_prior < 0.88:
-                continue
-        elif strategy == "student_multiview_elite":
-            if candidate.get("agreement_count", 0) < 3:
-                continue
-            if candidate.get("label_support_margin", 0.0) < 1.0:
-                continue
-            if candidate["judge_score"] < primary["judge_score"] - 0.55:
-                continue
-            if candidate["judge_score"] < 18.2:
-                continue
-            if not (10 <= candidate.get("word_count", 0) <= 120):
-                continue
-            source_prior = label_prior.get(candidate["source"], 0.0)
-            if source_prior < 0.84:
-                continue
-        else:
-            if candidate.get("agreement_count", 0) < 2:
-                continue
-            if candidate["judge_score"] < primary["judge_score"] - 1.1:
-                continue
-            source_prior = STUDENT_SIGNAL_TYPE_PRIOR.get(training_label, {}).get(candidate["source"], 0.0)
+        if candidate.get("agreement_count", 0) < selection_config["min_agreement"]:
+            continue
+        if candidate.get("label_support_margin", 0.0) < selection_config.get("min_label_support_margin", float("-inf")):
+            continue
+        if candidate["judge_score"] < primary["judge_score"] - selection_config["max_score_gap"]:
+            continue
+        if candidate["judge_score"] < selection_config.get("min_judge_score", float("-inf")):
+            continue
+        if "word_count_min" in selection_config and candidate.get("word_count", 0) < selection_config["word_count_min"]:
+            continue
+        if "word_count_max" in selection_config and candidate.get("word_count", 0) > selection_config["word_count_max"]:
+            continue
+        source_prior = label_prior.get(candidate["source"], 0.0)
+        if source_prior < selection_config.get("min_source_prior", float("-inf")):
+            continue
 
         diversity_gain = 1.0 - similarity
         alternatives.append((diversity_gain, source_prior, candidate))
@@ -738,28 +425,12 @@ def score_candidate(candidate, gold_label, strategy):
     rationale_lower = rationale.lower()
     word_count = len(re.findall(r"\w+", rationale))
 
-    if strategy in {"thesis", "guarded_short"}:
-        if word_count < 8:
-            length_score = -0.8
-        elif word_count <= 64:
-            length_score = 1.15
-        elif word_count <= 120:
-            length_score = 0.55
-        elif word_count <= 180:
-            length_score = 0.05
-        else:
-            length_score = -0.85
-    else:
-        if word_count < 6:
-            length_score = -1.0
-        elif word_count <= 80:
-            length_score = 1.0
-        elif word_count <= 180:
-            length_score = 0.6
-        elif word_count <= 260:
-            length_score = 0.2
-        else:
-            length_score = -0.6
+    length_schedule = (
+        ESNLI_LENGTH_SCORE_CONFIG["short"]
+        if strategy in {"thesis", "guarded_short"}
+        else ESNLI_LENGTH_SCORE_CONFIG["default"]
+    )
+    length_score = piecewise_score(word_count, length_schedule)
 
     support_tokens = tokenize_for_overlap(premise) | tokenize_for_overlap(hypothesis)
     rationale_tokens = tokenize_for_overlap(rationale)
@@ -767,35 +438,39 @@ def score_candidate(candidate, gold_label, strategy):
     if rationale_tokens:
         overlap_score = len(rationale_tokens & support_tokens) / max(1, len(rationale_tokens))
 
+    common_config = ESNLI_COMMON_SCORING
     cue_bonus = sum(1 for cue in REASONING_CUES if cue in rationale_lower)
-    cue_bonus = min(cue_bonus * 0.12, 0.48)
+    cue_bonus = min(cue_bonus * common_config["cue_bonus_weight"], common_config["cue_bonus_cap"])
 
     label_bonus = 0.0
     if gold_label in rationale_lower:
-        label_bonus += 0.25
+        label_bonus += common_config["label_mention_bonus"]
     if "the correct answer" in rationale_lower or "so the answer is" in rationale_lower:
-        label_bonus += 0.15
+        label_bonus += common_config["answer_format_bonus"]
 
     teaching_cues = LABEL_TEACHING_CUES.get(gold_label, ())
-    teaching_cue_bonus = min(0.18 * sum(1 for cue in teaching_cues if cue in rationale_lower), 0.72)
+    teaching_cue_bonus = min(
+        common_config["teaching_cue_weight"] * sum(1 for cue in teaching_cues if cue in rationale_lower),
+        common_config["teaching_cue_cap"],
+    )
 
     ambiguity_penalty = 0.0
     other_labels = {"entailment", "neutral", "contradiction"} - {gold_label}
     other_mentions = sum(1 for other in other_labels if other in rationale_lower)
     if other_mentions >= 2:
-        ambiguity_penalty -= 0.45
+        ambiguity_penalty += common_config["ambiguity_two_label_penalty"]
     elif other_mentions == 1:
-        ambiguity_penalty -= 0.2
+        ambiguity_penalty += common_config["ambiguity_one_label_penalty"]
     if any(hedge in rationale_lower for hedge in ["maybe", "perhaps", "probably", "i think"]):
-        ambiguity_penalty -= 0.15
+        ambiguity_penalty += common_config["hedge_penalty"]
 
     teachability_bonus = 0.0
-    if 10 <= word_count <= 64:
-        teachability_bonus += 0.35
-    elif 65 <= word_count <= 96:
-        teachability_bonus += 0.12
-    elif word_count > 140:
-        teachability_bonus -= 0.25
+    if common_config["teachability_ideal_min_words"] <= word_count <= common_config["teachability_ideal_max_words"]:
+        teachability_bonus += common_config["teachability_ideal_bonus"]
+    elif common_config["teachability_ok_min_words"] <= word_count <= common_config["teachability_ok_max_words"]:
+        teachability_bonus += common_config["teachability_ok_bonus"]
+    elif word_count >= common_config["teachability_long_word_min"]:
+        teachability_bonus += common_config["teachability_long_penalty"]
 
     if strategy in {"student_signal", "student_signal_hardclean", "student_signal_balanced", "student_multiview", "all_views", "all_views_consensus"}:
         type_prior = STUDENT_SIGNAL_TYPE_PRIOR.get(gold_label, {})
@@ -825,289 +500,52 @@ def score_candidate(candidate, gold_label, strategy):
         type_prior = LABEL_EXPERT_TYPE_PRIOR.get(gold_label, {})
     else:
         type_prior = TYPE_PRIOR
+
     source_prior = type_prior.get(source, 0.5)
-    if strategy == "thesis":
-        label_score = 3.2 if label_match else -2.2
-        preferred_bonus = 0.45 if source in THESIS_PREFERRED_SOURCES else 0.0
-        total = label_score + source_prior + preferred_bonus + 1.0 * length_score + 0.85 * overlap_score + cue_bonus + label_bonus
-    elif strategy == "agreement":
-        label_score = 3.4 if label_match else -2.4
-        preferred_bonus = 0.35 if source in AGREEMENT_PREFERRED_SOURCES else 0.0
-        agreement_bonus = 0.55 * candidate.get("agreement_count", 0) + 0.25 * candidate.get("agreement_ratio", 0.0)
-        total = label_score + source_prior + preferred_bonus + agreement_bonus + 0.95 * length_score + 0.9 * overlap_score + cue_bonus + label_bonus
-    elif strategy == "guarded":
-        label_score = 3.6 if label_match else -3.0
-        preferred_bonus = 0.45 if source in GUARDED_PREFERRED_SOURCES else 0.0
-        agreement_bonus = 0.75 * candidate.get("agreement_count", 0) + 0.45 * candidate.get("agreement_ratio", 0.0)
-        total = label_score + source_prior + preferred_bonus + agreement_bonus + 1.0 * length_score + 0.95 * overlap_score + cue_bonus + label_bonus
-    elif strategy == "guarded_short":
-        label_score = 3.7 if label_match else -3.0
-        preferred_bonus = 0.48 if source in GUARDED_PREFERRED_SOURCES else 0.0
-        agreement_bonus = 0.78 * candidate.get("agreement_count", 0) + 0.42 * candidate.get("agreement_ratio", 0.0)
-        brevity_bonus = 0.4 if 12 <= word_count <= 64 else (-0.25 if word_count > 110 else 0.0)
-        total = label_score + source_prior + preferred_bonus + agreement_bonus + 1.05 * length_score + 0.95 * overlap_score + cue_bonus + label_bonus + brevity_bonus
-    elif strategy == "guarded_balanced":
-        label_score = 3.45 if label_match else -2.8
-        preferred_bonus = 0.22 if source in GUARDED_PREFERRED_SOURCES else 0.0
-        diversity_bonus = 0.25 if source in {"comparative", "causal", "consensus", "if_else"} else 0.0
-        agreement_bonus = 0.68 * candidate.get("agreement_count", 0) + 0.38 * candidate.get("agreement_ratio", 0.0)
-        total = label_score + source_prior + preferred_bonus + diversity_bonus + agreement_bonus + 0.95 * length_score + 0.95 * overlap_score + cue_bonus + label_bonus
-    elif strategy == "guarded_hardclean":
-        label_score = 3.9 if label_match else -3.2
-        preferred_bonus = 0.52 if source in GUARDED_PREFERRED_SOURCES else 0.0
-        agreement_bonus = 0.9 * candidate.get("agreement_count", 0) + 0.55 * candidate.get("agreement_ratio", 0.0)
-        strict_bonus = 0.35 if word_count <= 80 else -0.4
-        total = label_score + source_prior + preferred_bonus + agreement_bonus + 1.05 * length_score + 1.0 * overlap_score + cue_bonus + label_bonus + strict_bonus
-    elif strategy == "label_priority":
-        label_score = 4.1 if label_match else -3.2
-        preferred_bonus = 0.35 if source in GUARDED_PREFERRED_SOURCES else 0.0
-        agreement_bonus = 0.55 * candidate.get("agreement_count", 0) + 0.35 * candidate.get("agreement_ratio", 0.0)
-        margin_bonus = 0.75 * candidate.get("label_support_margin", 0.0)
-        total = label_score + source_prior + preferred_bonus + agreement_bonus + margin_bonus + 0.95 * length_score + 0.9 * overlap_score + cue_bonus + label_bonus
-    elif strategy == "label_priority_guarded":
-        label_score = 4.2 if label_match else -3.3
-        preferred_bonus = 0.42 if source in GUARDED_PREFERRED_SOURCES else 0.0
-        agreement_bonus = 0.7 * candidate.get("agreement_count", 0) + 0.42 * candidate.get("agreement_ratio", 0.0)
-        margin_bonus = 0.9 * candidate.get("label_support_margin", 0.0)
-        total = label_score + source_prior + preferred_bonus + agreement_bonus + margin_bonus + 1.0 * length_score + 0.95 * overlap_score + cue_bonus + label_bonus
-    elif strategy == "label_priority_guarded_balanced":
-        label_score = 4.0 if label_match else -3.15
-        preferred_bonus = 0.28 if source in GUARDED_PREFERRED_SOURCES else 0.0
-        diversity_bonus = 0.18 if source in {"comparative", "causal", "consensus", "if_else"} else 0.0
-        agreement_bonus = 0.62 * candidate.get("agreement_count", 0) + 0.38 * candidate.get("agreement_ratio", 0.0)
-        margin_bonus = 0.82 * candidate.get("label_support_margin", 0.0)
-        total = label_score + source_prior + preferred_bonus + diversity_bonus + agreement_bonus + margin_bonus + 0.98 * length_score + 0.95 * overlap_score + cue_bonus + label_bonus
-    elif strategy == "label_expert_guarded":
-        label_score = 4.3 if label_match else -3.25
-        agreement_bonus = 0.72 * candidate.get("agreement_count", 0) + 0.45 * candidate.get("agreement_ratio", 0.0)
-        margin_bonus = 0.95 * candidate.get("label_support_margin", 0.0)
-        total = label_score + source_prior + agreement_bonus + margin_bonus + 1.0 * length_score + 0.98 * overlap_score + cue_bonus + label_bonus
-    elif strategy == "label_expert_guarded_balanced":
-        label_score = 4.15 if label_match else -3.15
-        agreement_bonus = 0.68 * candidate.get("agreement_count", 0) + 0.42 * candidate.get("agreement_ratio", 0.0)
-        margin_bonus = 0.9 * candidate.get("label_support_margin", 0.0)
-        diversity_bonus = 0.12 if source in {"comparative", "causal", "consensus", "if_else"} else 0.0
-        total = label_score + source_prior + agreement_bonus + margin_bonus + diversity_bonus + 0.98 * length_score + 0.97 * overlap_score + cue_bonus + label_bonus
-    elif strategy == "student_signal":
-        label_score = 4.35 if label_match else -3.3
-        agreement_bonus = 0.75 * candidate.get("agreement_count", 0) + 0.45 * candidate.get("agreement_ratio", 0.0)
-        margin_bonus = 1.0 * candidate.get("label_support_margin", 0.0)
-        total = (
-            label_score
-            + source_prior
-            + agreement_bonus
-            + margin_bonus
-            + 1.0 * length_score
-            + 1.0 * overlap_score
-            + cue_bonus
-            + label_bonus
-            + teaching_cue_bonus
-            + teachability_bonus
-            + ambiguity_penalty
-        )
-    elif strategy == "student_signal_hardclean":
-        label_score = 4.5 if label_match else -3.5
-        agreement_bonus = 0.85 * candidate.get("agreement_count", 0) + 0.5 * candidate.get("agreement_ratio", 0.0)
-        margin_bonus = 1.1 * candidate.get("label_support_margin", 0.0)
-        strict_bonus = 0.18 if 12 <= word_count <= 72 else (-0.22 if word_count > 110 else 0.0)
-        total = (
-            label_score
-            + source_prior
-            + agreement_bonus
-            + margin_bonus
-            + 1.02 * length_score
-            + 1.02 * overlap_score
-            + cue_bonus
-            + label_bonus
-            + teaching_cue_bonus
-            + teachability_bonus
-            + strict_bonus
-            + ambiguity_penalty
-        )
-    elif strategy == "student_signal_balanced":
-        label_score = 4.25 if label_match else -3.2
-        agreement_bonus = 0.72 * candidate.get("agreement_count", 0) + 0.42 * candidate.get("agreement_ratio", 0.0)
-        margin_bonus = 0.95 * candidate.get("label_support_margin", 0.0)
-        diversity_bonus = 0.1 if source in {"comparative", "causal", "consensus", "if_else"} else 0.0
-        total = (
-            label_score
-            + source_prior
-            + agreement_bonus
-            + margin_bonus
-            + diversity_bonus
-            + 0.98 * length_score
-            + 1.0 * overlap_score
-            + cue_bonus
-            + label_bonus
-            + teaching_cue_bonus
-            + teachability_bonus
-            + ambiguity_penalty
-        )
-    elif strategy == "student_multiview":
-        label_score = 4.3 if label_match else -3.25
-        agreement_bonus = 0.74 * candidate.get("agreement_count", 0) + 0.45 * candidate.get("agreement_ratio", 0.0)
-        margin_bonus = 0.98 * candidate.get("label_support_margin", 0.0)
-        diversity_bonus = 0.08 if source in {"comparative", "causal", "consensus", "if_else"} else 0.0
-        total = (
-            label_score
-            + source_prior
-            + agreement_bonus
-            + margin_bonus
-            + diversity_bonus
-            + 1.0 * length_score
-            + 1.0 * overlap_score
-            + cue_bonus
-            + label_bonus
-            + teaching_cue_bonus
-            + teachability_bonus
-            + ambiguity_penalty
-        )
-    elif strategy == "student_multiview_elite":
-        label_score = 4.45 if label_match else -3.4
-        agreement_bonus = 0.8 * candidate.get("agreement_count", 0) + 0.5 * candidate.get("agreement_ratio", 0.0)
-        margin_bonus = 1.08 * candidate.get("label_support_margin", 0.0)
-        diversity_bonus = 0.14 if source in {"comparative", "historical", "contrastive", "if_else"} else 0.0
-        strict_bonus = 0.16 if 12 <= word_count <= 96 else (-0.18 if word_count > 128 else 0.0)
-        total = (
-            label_score
-            + source_prior
-            + agreement_bonus
-            + margin_bonus
-            + diversity_bonus
-            + strict_bonus
-            + 1.02 * length_score
-            + 1.02 * overlap_score
-            + cue_bonus
-            + label_bonus
-            + teaching_cue_bonus
-            + teachability_bonus
-            + ambiguity_penalty
-        )
-    elif strategy == "student_multiview_hardclean_balanced":
-        label_score = 4.55 if label_match else -3.5
-        agreement_bonus = 0.86 * candidate.get("agreement_count", 0) + 0.54 * candidate.get("agreement_ratio", 0.0)
-        margin_bonus = 1.15 * candidate.get("label_support_margin", 0.0)
-        diversity_bonus = 0.18 if source in {"comparative", "historical", "contrastive", "if_else"} else 0.0
-        strict_bonus = 0.24 if 12 <= word_count <= 84 else (-0.25 if word_count > 110 else 0.0)
-        total = (
-            label_score
-            + source_prior
-            + agreement_bonus
-            + margin_bonus
-            + diversity_bonus
-            + strict_bonus
-            + 1.04 * length_score
-            + 1.03 * overlap_score
-            + cue_bonus
-            + label_bonus
-            + teaching_cue_bonus
-            + teachability_bonus
-            + ambiguity_penalty
-        )
-    elif strategy == "student_multiview_hybrid_balanced":
-        label_score = 4.42 if label_match else -3.35
-        agreement_bonus = 0.79 * candidate.get("agreement_count", 0) + 0.5 * candidate.get("agreement_ratio", 0.0)
-        margin_bonus = 1.06 * candidate.get("label_support_margin", 0.0)
-        diversity_bonus = 0.16 if source in {"comparative", "historical", "contrastive", "if_else"} else 0.0
-        strict_bonus = 0.18 if 10 <= word_count <= 96 else (-0.18 if word_count > 120 else 0.0)
-        total = (
-            label_score
-            + source_prior
-            + agreement_bonus
-            + margin_bonus
-            + diversity_bonus
-            + strict_bonus
-            + 1.02 * length_score
-            + 1.0 * overlap_score
-            + cue_bonus
-            + label_bonus
-            + teaching_cue_bonus
-            + teachability_bonus
-            + ambiguity_penalty
-        )
-    elif strategy == "student_singleview_superclean_balanced":
-        label_score = 4.6 if label_match else -3.55
-        agreement_bonus = 0.88 * candidate.get("agreement_count", 0) + 0.56 * candidate.get("agreement_ratio", 0.0)
-        margin_bonus = 1.18 * candidate.get("label_support_margin", 0.0)
-        specialist_bonus = 0.2 if source in {"historical", "contrastive", "comparative", "if_else"} else 0.0
-        strict_bonus = 0.28 if 12 <= word_count <= 84 else (-0.3 if word_count > 108 else 0.0)
-        total = (
-            label_score
-            + source_prior
-            + agreement_bonus
-            + margin_bonus
-            + specialist_bonus
-            + strict_bonus
-            + 1.05 * length_score
-            + 1.04 * overlap_score
-            + cue_bonus
-            + label_bonus
-            + teaching_cue_bonus
-            + teachability_bonus
-            + ambiguity_penalty
-        )
-    elif strategy == "student_multiview_sourceblend_balanced":
-        label_score = 4.48 if label_match else -3.4
-        agreement_bonus = 0.82 * candidate.get("agreement_count", 0) + 0.52 * candidate.get("agreement_ratio", 0.0)
-        margin_bonus = 1.08 * candidate.get("label_support_margin", 0.0)
-        diversity_bonus = 0.22 if source in {"historical", "comparative", "contrastive", "if_else", "consensus"} else 0.0
-        strict_bonus = 0.16 if 10 <= word_count <= 100 else (-0.16 if word_count > 124 else 0.0)
-        total = (
-            label_score
-            + source_prior
-            + agreement_bonus
-            + margin_bonus
-            + diversity_bonus
-            + strict_bonus
-            + 1.02 * length_score
-            + 1.0 * overlap_score
-            + cue_bonus
-            + label_bonus
-            + teaching_cue_bonus
-            + teachability_bonus
-            + ambiguity_penalty
-        )
-    elif strategy == "student_singleview_diverse_balanced":
-        label_score = 4.5 if label_match else -3.42
-        agreement_bonus = 0.83 * candidate.get("agreement_count", 0) + 0.54 * candidate.get("agreement_ratio", 0.0)
-        margin_bonus = 1.1 * candidate.get("label_support_margin", 0.0)
-        diversity_bonus = 0.2 if source in {"historical", "comparative", "contrastive", "if_else", "consensus"} else 0.0
-        strict_bonus = 0.2 if 10 <= word_count <= 92 else (-0.2 if word_count > 112 else 0.0)
-        total = (
-            label_score
-            + source_prior
-            + agreement_bonus
-            + margin_bonus
-            + diversity_bonus
-            + strict_bonus
-            + 1.03 * length_score
-            + 1.02 * overlap_score
-            + cue_bonus
-            + label_bonus
-            + teaching_cue_bonus
-            + teachability_bonus
-            + ambiguity_penalty
-        )
-    elif strategy in {"all_views", "all_views_consensus"}:
-        label_score = 4.25 if label_match else -3.2
-        agreement_bonus = 0.72 * candidate.get("agreement_count", 0) + 0.44 * candidate.get("agreement_ratio", 0.0)
-        margin_bonus = 0.95 * candidate.get("label_support_margin", 0.0)
-        total = (
-            label_score
-            + source_prior
-            + agreement_bonus
-            + margin_bonus
-            + 1.0 * length_score
-            + 1.0 * overlap_score
-            + cue_bonus
-            + label_bonus
-            + teaching_cue_bonus
-            + teachability_bonus
-            + ambiguity_penalty
-        )
-    else:
-        label_score = 3.0 if label_match else -2.0
-        total = label_score + source_prior + 0.9 * length_score + 0.9 * overlap_score + cue_bonus + label_bonus
+    strategy_config = ESNLI_SCORING_STRATEGIES.get(strategy, ESNLI_SCORING_STRATEGIES["default"])
+    label_score = strategy_config["label_match_score"] if label_match else strategy_config["label_mismatch_score"]
+    preferred_bonus = (
+        strategy_config.get("preferred_bonus", 0.0)
+        if source in preferred_sources(strategy_config.get("preferred_sources"))
+        else 0.0
+    )
+    diversity_bonus = (
+        strategy_config.get("diversity_bonus", 0.0)
+        if source in set(strategy_config.get("diversity_sources", []))
+        else 0.0
+    )
+    specialist_bonus = (
+        strategy_config.get("specialist_bonus", 0.0)
+        if source in set(strategy_config.get("specialist_sources", []))
+        else 0.0
+    )
+    agreement_bonus = (
+        strategy_config.get("agreement_count_weight", 0.0) * candidate.get("agreement_count", 0)
+        + strategy_config.get("agreement_ratio_weight", 0.0) * candidate.get("agreement_ratio", 0.0)
+    )
+    margin_bonus = strategy_config.get("margin_weight", 0.0) * candidate.get("label_support_margin", 0.0)
+    strict_bonus = word_condition_bonus(word_count, strategy_config.get("strict_bonus"))
+
+    total = (
+        label_score
+        + source_prior
+        + preferred_bonus
+        + diversity_bonus
+        + specialist_bonus
+        + agreement_bonus
+        + margin_bonus
+        + strict_bonus
+        + strategy_config.get("length_weight", 0.0) * length_score
+        + strategy_config.get("overlap_weight", 0.0) * overlap_score
+        + cue_bonus
+        + label_bonus
+    )
+    if strategy_config.get("include_teaching"):
+        total += teaching_cue_bonus
+    if strategy_config.get("include_teachability"):
+        total += teachability_bonus
+    if strategy_config.get("include_ambiguity"):
+        total += ambiguity_penalty
 
     return {
         "judge_score": round(total, 6),
@@ -1115,7 +553,6 @@ def score_candidate(candidate, gold_label, strategy):
         "word_count": word_count,
         "overlap_score": round(overlap_score, 6),
     }
-
 
 def infer_gold_label(candidates, strategy):
     scores = {}
@@ -1430,7 +867,7 @@ def build_judged_dataset(source_names, output_name, strategy):
                 continue
             if strategy == "label_priority":
                 if paper_gold_label in {"entailment", "neutral", "contradiction"}:
-                    if voted_label != paper_gold_label and vote_margin >= 1.25:
+                    if voted_label != paper_gold_label and vote_margin >= ESNLI_TRAINING_VOTE_MARGIN_THRESHOLDS["label_priority"]:
                         training_label = voted_label
                         voted_label_override_count += 1
                 else:
@@ -1442,14 +879,9 @@ def build_judged_dataset(source_names, output_name, strategy):
                 else:
                     if paper_gold_label in {"entailment", "neutral", "contradiction"} and voted_label == paper_gold_label:
                         training_label = paper_gold_label
-                    elif vote_margin >= (
-                        1.65 if strategy == "student_multiview_hardclean_balanced"
-                        else 1.55 if strategy == "student_multiview_hybrid_balanced"
-                        else 1.52 if strategy == "student_multiview_sourceblend_balanced"
-                        else 1.6 if strategy == "student_singleview_superclean_balanced"
-                        else 1.5 if strategy == "student_singleview_diverse_balanced"
-                        else 1.5 if strategy == "student_multiview_elite"
-                        else 1.35
+                    elif vote_margin >= ESNLI_TRAINING_VOTE_MARGIN_THRESHOLDS.get(
+                        strategy,
+                        ESNLI_TRAINING_VOTE_MARGIN_THRESHOLDS["default"],
                     ):
                         training_label = voted_label
                         if paper_gold_label in {"entailment", "neutral", "contradiction"} and voted_label != paper_gold_label:
@@ -1463,7 +895,7 @@ def build_judged_dataset(source_names, output_name, strategy):
                 else:
                     if paper_gold_label in {"entailment", "neutral", "contradiction"} and voted_label == paper_gold_label:
                         training_label = paper_gold_label
-                    elif vote_margin >= 1.25:
+                    elif vote_margin >= ESNLI_TRAINING_VOTE_MARGIN_THRESHOLDS["fallback"]:
                         training_label = voted_label
                         if paper_gold_label in {"entailment", "neutral", "contradiction"} and voted_label != paper_gold_label:
                             voted_label_override_count += 1
@@ -1554,239 +986,14 @@ def build_judged_dataset(source_names, output_name, strategy):
             support_margin = winning_support - runner_up_support
             matched_count = sum(1 for candidate in candidates if candidate["label"] == training_label)
             high_quality_source = any(candidate["source"] in GUARDED_PREFERRED_SOURCES for candidate in matching_candidates)
-            if strategy == "guarded":
-                keep_example = (
-                    matched_count >= 3
-                    or (
-                        matched_count >= 2
-                        and support_margin >= 0.75
-                        and best["judge_score"] >= 7.0
-                        and high_quality_source
-                    )
-                )
-            elif strategy == "guarded_short":
-                keep_example = (
-                    matched_count >= 3
-                    or (
-                        matched_count >= 2
-                        and support_margin >= 0.9
-                        and best["judge_score"] >= 7.4
-                        and high_quality_source
-                        and 12 <= best["word_count"] <= 96
-                    )
-                )
-            elif strategy == "guarded_balanced":
-                keep_example = (
-                    matched_count >= 3
-                    or (
-                        matched_count >= 2
-                        and support_margin >= 0.65
-                        and best["judge_score"] >= 6.8
-                    )
-                )
-            elif strategy == "label_priority_guarded":
-                keep_example = (
-                    matched_count >= 3
-                    and support_margin >= 0.9
-                    and best["judge_score"] >= 8.2
-                ) or (
-                    matched_count >= 2
-                    and support_margin >= 1.25
-                    and best["judge_score"] >= 8.8
-                    and high_quality_source
-                )
-            elif strategy == "label_priority_guarded_balanced":
-                keep_example = (
-                    matched_count >= 3
-                    and support_margin >= 0.8
-                    and best["judge_score"] >= 7.8
-                ) or (
-                    matched_count >= 2
-                    and support_margin >= 1.1
-                    and best["judge_score"] >= 8.4
-                )
-            elif strategy == "label_expert_guarded":
-                keep_example = (
-                    matched_count >= 3
-                    and support_margin >= 0.85
-                    and best["judge_score"] >= 8.4
-                ) or (
-                    matched_count >= 2
-                    and support_margin >= 1.15
-                    and best["judge_score"] >= 9.0
-                )
-            elif strategy == "label_expert_guarded_balanced":
-                keep_example = (
-                    matched_count >= 3
-                    and support_margin >= 0.75
-                    and best["judge_score"] >= 8.0
-                ) or (
-                    matched_count >= 2
-                    and support_margin >= 1.05
-                    and best["judge_score"] >= 8.6
-                )
-            elif strategy == "student_signal":
-                explicit_label_support = best["rationale"].lower().count(training_label)
-                keep_example = (
-                    matched_count >= 3
-                    and support_margin >= 0.9
-                    and best["judge_score"] >= 8.6
-                    and 10 <= best["word_count"] <= 96
-                ) or (
-                    matched_count >= 2
-                    and support_margin >= 1.35
-                    and best["judge_score"] >= 9.2
-                    and explicit_label_support >= 1
-                    and 10 <= best["word_count"] <= 110
-                )
-            elif strategy == "student_signal_hardclean":
-                explicit_label_support = best["rationale"].lower().count(training_label)
-                keep_example = (
-                    matched_count >= 3
-                    and support_margin >= 1.0
-                    and best["judge_score"] >= 9.0
-                    and 12 <= best["word_count"] <= 84
-                ) or (
-                    matched_count >= 2
-                    and support_margin >= 1.45
-                    and best["judge_score"] >= 9.6
-                    and explicit_label_support >= 1
-                    and 12 <= best["word_count"] <= 96
-                )
-            elif strategy == "student_signal_balanced":
-                explicit_label_support = best["rationale"].lower().count(training_label)
-                keep_example = (
-                    matched_count >= 3
-                    and support_margin >= 0.8
-                    and best["judge_score"] >= 8.3
-                    and 10 <= best["word_count"] <= 110
-                ) or (
-                    matched_count >= 2
-                    and support_margin >= 1.2
-                    and best["judge_score"] >= 8.9
-                    and explicit_label_support >= 1
-                    and 10 <= best["word_count"] <= 120
-                )
-            elif strategy == "student_multiview":
-                explicit_label_support = best["rationale"].lower().count(training_label)
-                keep_example = (
-                    matched_count >= 3
-                    and support_margin >= 0.85
-                    and best["judge_score"] >= 8.4
-                    and 10 <= best["word_count"] <= 110
-                ) or (
-                    matched_count >= 2
-                    and support_margin >= 1.2
-                    and best["judge_score"] >= 8.9
-                    and explicit_label_support >= 1
-                    and 10 <= best["word_count"] <= 120
-                )
-            elif strategy == "student_multiview_elite":
-                explicit_label_support = best["rationale"].lower().count(training_label)
-                keep_example = (
-                    matched_count >= 3
-                    and support_margin >= 1.0
-                    and best["judge_score"] >= 9.0
-                    and 10 <= best["word_count"] <= 96
-                    and high_quality_source
-                ) or (
-                    matched_count >= 2
-                    and support_margin >= 1.45
-                    and best["judge_score"] >= 9.5
-                    and explicit_label_support >= 1
-                    and 10 <= best["word_count"] <= 110
-                    and high_quality_source
-                )
-            elif strategy == "student_multiview_hardclean_balanced":
-                explicit_label_support = best["rationale"].lower().count(training_label)
-                keep_example = (
-                    matched_count >= 3
-                    and support_margin >= 1.15
-                    and best["judge_score"] >= 9.3
-                    and 10 <= best["word_count"] <= 90
-                    and high_quality_source
-                ) or (
-                    matched_count >= 2
-                    and support_margin >= 1.6
-                    and best["judge_score"] >= 9.9
-                    and explicit_label_support >= 1
-                    and 10 <= best["word_count"] <= 104
-                    and high_quality_source
-                )
-            elif strategy == "student_multiview_hybrid_balanced":
-                explicit_label_support = best["rationale"].lower().count(training_label)
-                keep_example = (
-                    matched_count >= 3
-                    and support_margin >= 1.05
-                    and best["judge_score"] >= 9.1
-                    and 10 <= best["word_count"] <= 96
-                    and high_quality_source
-                ) or (
-                    matched_count >= 2
-                    and support_margin >= 1.5
-                    and best["judge_score"] >= 9.6
-                    and explicit_label_support >= 1
-                    and 10 <= best["word_count"] <= 108
-                    and high_quality_source
-                )
-            elif strategy == "student_singleview_superclean_balanced":
-                explicit_label_support = best["rationale"].lower().count(training_label)
-                keep_example = (
-                    matched_count >= 3
-                    and support_margin >= 1.2
-                    and best["judge_score"] >= 9.4
-                    and 10 <= best["word_count"] <= 88
-                    and high_quality_source
-                ) or (
-                    matched_count >= 2
-                    and support_margin >= 1.7
-                    and best["judge_score"] >= 10.0
-                    and explicit_label_support >= 1
-                    and 10 <= best["word_count"] <= 100
-                    and high_quality_source
-                )
-            elif strategy == "student_multiview_sourceblend_balanced":
-                explicit_label_support = best["rationale"].lower().count(training_label)
-                keep_example = (
-                    matched_count >= 3
-                    and support_margin >= 1.08
-                    and best["judge_score"] >= 9.15
-                    and 10 <= best["word_count"] <= 102
-                    and high_quality_source
-                ) or (
-                    matched_count >= 2
-                    and support_margin >= 1.55
-                    and best["judge_score"] >= 9.7
-                    and explicit_label_support >= 1
-                    and 10 <= best["word_count"] <= 112
-                    and high_quality_source
-                )
-            elif strategy == "student_singleview_diverse_balanced":
-                explicit_label_support = best["rationale"].lower().count(training_label)
-                keep_example = (
-                    matched_count >= 3
-                    and support_margin >= 1.1
-                    and best["judge_score"] >= 9.25
-                    and 10 <= best["word_count"] <= 92
-                    and high_quality_source
-                ) or (
-                    matched_count >= 2
-                    and support_margin >= 1.55
-                    and best["judge_score"] >= 9.8
-                    and explicit_label_support >= 1
-                    and 10 <= best["word_count"] <= 104
-                    and high_quality_source
-                )
-            else:
-                keep_example = (
-                    matched_count >= 4
-                    or (
-                        matched_count >= 3
-                        and support_margin >= 1.1
-                        and best["judge_score"] >= 8.0
-                        and high_quality_source
-                    )
-                )
+            keep_example = keep_rule_passes(
+                strategy,
+                matched_count,
+                support_margin,
+                best,
+                high_quality_source,
+                training_label,
+            )
             if not keep_example:
                 low_confidence_drop_count += 1
                 continue

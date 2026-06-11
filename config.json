@@ -251,5 +251,1513 @@
       "similarity_limit": 0.76,
       "max_secondary_gap": 0.5
     }
+  },
+  "esnli_sources": [
+    "neutral",
+    "contrastive",
+    "historical",
+    "comparative",
+    "causal",
+    "consensus",
+    "if_else"
+  ],
+  "esnli_preferred_sources": {
+    "THESIS_PREFERRED_SOURCES": [
+      "neutral",
+      "contrastive",
+      "historical"
+    ],
+    "AGREEMENT_PREFERRED_SOURCES": [
+      "neutral",
+      "contrastive",
+      "historical",
+      "comparative"
+    ],
+    "GUARDED_PREFERRED_SOURCES": [
+      "neutral",
+      "contrastive",
+      "historical"
+    ]
+  },
+  "esnli_source_priors": {
+    "TYPE_PRIOR": {
+      "neutral": 1.0,
+      "contrastive": 0.95,
+      "historical": 0.9,
+      "comparative": 0.82,
+      "causal": 0.78,
+      "consensus": 0.74,
+      "if_else": 0.7,
+      "paper": 0.55
+    },
+    "THESIS_TYPE_PRIOR": {
+      "neutral": 1.0,
+      "contrastive": 0.98,
+      "historical": 0.96,
+      "comparative": 0.55,
+      "causal": 0.52,
+      "consensus": 0.48,
+      "if_else": 0.42,
+      "paper": 0.35
+    },
+    "AGREEMENT_TYPE_PRIOR": {
+      "neutral": 1.0,
+      "contrastive": 0.96,
+      "historical": 0.92,
+      "comparative": 0.86,
+      "causal": 0.72,
+      "consensus": 0.7,
+      "if_else": 0.66,
+      "paper": 0.2
+    },
+    "GUARDED_TYPE_PRIOR": {
+      "neutral": 1.0,
+      "contrastive": 0.97,
+      "historical": 0.94,
+      "comparative": 0.8,
+      "causal": 0.68,
+      "consensus": 0.64,
+      "if_else": 0.6,
+      "paper": 0.0
+    },
+    "BALANCED_TYPE_PRIOR": {
+      "neutral": 1.0,
+      "contrastive": 0.98,
+      "historical": 0.96,
+      "comparative": 0.94,
+      "causal": 0.88,
+      "consensus": 0.82,
+      "if_else": 0.8,
+      "paper": 0.0
+    },
+    "LABEL_PRIORITY_TYPE_PRIOR": {
+      "neutral": 1.0,
+      "contrastive": 0.98,
+      "historical": 0.95,
+      "comparative": 0.83,
+      "causal": 0.76,
+      "consensus": 0.73,
+      "if_else": 0.68,
+      "paper": 0.3
+    },
+    "LABEL_EXPERT_TYPE_PRIOR": {
+      "entailment": {
+        "historical": 1.0,
+        "consensus": 0.99,
+        "contrastive": 0.97,
+        "causal": 0.93,
+        "neutral": 0.91,
+        "if_else": 0.87,
+        "comparative": 0.84,
+        "paper": 0.0
+      },
+      "neutral": {
+        "if_else": 1.0,
+        "comparative": 0.98,
+        "neutral": 0.96,
+        "causal": 0.9,
+        "consensus": 0.88,
+        "contrastive": 0.84,
+        "historical": 0.78,
+        "paper": 0.0
+      },
+      "contradiction": {
+        "comparative": 1.0,
+        "contrastive": 0.99,
+        "causal": 0.97,
+        "neutral": 0.94,
+        "consensus": 0.92,
+        "historical": 0.87,
+        "if_else": 0.84,
+        "paper": 0.0
+      }
+    },
+    "STUDENT_SIGNAL_TYPE_PRIOR": {
+      "entailment": {
+        "historical": 1.0,
+        "consensus": 0.99,
+        "contrastive": 0.96,
+        "neutral": 0.92,
+        "causal": 0.9,
+        "if_else": 0.85,
+        "comparative": 0.82,
+        "paper": 0.0
+      },
+      "neutral": {
+        "if_else": 1.0,
+        "neutral": 0.98,
+        "comparative": 0.96,
+        "contrastive": 0.88,
+        "causal": 0.86,
+        "consensus": 0.82,
+        "historical": 0.78,
+        "paper": 0.0
+      },
+      "contradiction": {
+        "comparative": 1.0,
+        "contrastive": 0.99,
+        "causal": 0.97,
+        "neutral": 0.92,
+        "consensus": 0.88,
+        "historical": 0.84,
+        "if_else": 0.82,
+        "paper": 0.0
+      }
+    },
+    "ELITE_MULTIVIEW_TYPE_PRIOR": {
+      "entailment": {
+        "historical": 1.0,
+        "consensus": 0.99,
+        "contrastive": 0.98,
+        "causal": 0.94,
+        "neutral": 0.92,
+        "if_else": 0.84,
+        "comparative": 0.8,
+        "paper": 0.0
+      },
+      "neutral": {
+        "if_else": 1.0,
+        "comparative": 0.99,
+        "neutral": 0.98,
+        "contrastive": 0.9,
+        "causal": 0.87,
+        "consensus": 0.84,
+        "historical": 0.72,
+        "paper": 0.0
+      },
+      "contradiction": {
+        "comparative": 1.0,
+        "contrastive": 1.0,
+        "causal": 0.98,
+        "neutral": 0.92,
+        "consensus": 0.88,
+        "historical": 0.8,
+        "if_else": 0.78,
+        "paper": 0.0
+      }
+    },
+    "HARDCLEAN_MULTIVIEW_TYPE_PRIOR": {
+      "entailment": {
+        "historical": 1.0,
+        "contrastive": 0.99,
+        "consensus": 0.97,
+        "causal": 0.93,
+        "neutral": 0.9,
+        "if_else": 0.8,
+        "comparative": 0.76,
+        "paper": 0.0
+      },
+      "neutral": {
+        "if_else": 1.0,
+        "comparative": 0.99,
+        "neutral": 0.97,
+        "contrastive": 0.92,
+        "causal": 0.85,
+        "consensus": 0.82,
+        "historical": 0.68,
+        "paper": 0.0
+      },
+      "contradiction": {
+        "comparative": 1.0,
+        "contrastive": 1.0,
+        "causal": 0.98,
+        "neutral": 0.9,
+        "consensus": 0.86,
+        "historical": 0.78,
+        "if_else": 0.74,
+        "paper": 0.0
+      }
+    },
+    "HYBRID_MULTIVIEW_TYPE_PRIOR": {
+      "entailment": {
+        "historical": 1.0,
+        "contrastive": 0.99,
+        "consensus": 0.98,
+        "causal": 0.94,
+        "neutral": 0.92,
+        "if_else": 0.78,
+        "comparative": 0.74,
+        "paper": 0.0
+      },
+      "neutral": {
+        "if_else": 1.0,
+        "comparative": 0.99,
+        "neutral": 0.98,
+        "contrastive": 0.93,
+        "causal": 0.84,
+        "consensus": 0.82,
+        "historical": 0.66,
+        "paper": 0.0
+      },
+      "contradiction": {
+        "comparative": 1.0,
+        "contrastive": 1.0,
+        "causal": 0.98,
+        "neutral": 0.91,
+        "consensus": 0.85,
+        "historical": 0.77,
+        "if_else": 0.72,
+        "paper": 0.0
+      }
+    },
+    "SINGLEVIEW_SUPERCLEAN_TYPE_PRIOR": {
+      "entailment": {
+        "historical": 1.0,
+        "consensus": 0.99,
+        "contrastive": 0.97,
+        "causal": 0.95,
+        "neutral": 0.9,
+        "if_else": 0.74,
+        "comparative": 0.7,
+        "paper": 0.0
+      },
+      "neutral": {
+        "if_else": 1.0,
+        "comparative": 0.99,
+        "neutral": 0.98,
+        "contrastive": 0.92,
+        "causal": 0.82,
+        "consensus": 0.8,
+        "historical": 0.62,
+        "paper": 0.0
+      },
+      "contradiction": {
+        "comparative": 1.0,
+        "contrastive": 1.0,
+        "causal": 0.98,
+        "neutral": 0.9,
+        "consensus": 0.84,
+        "historical": 0.76,
+        "if_else": 0.7,
+        "paper": 0.0
+      }
+    },
+    "SOURCEBLEND_MULTIVIEW_TYPE_PRIOR": {
+      "entailment": {
+        "historical": 1.0,
+        "contrastive": 0.98,
+        "consensus": 0.97,
+        "causal": 0.95,
+        "neutral": 0.93,
+        "if_else": 0.88,
+        "comparative": 0.86,
+        "paper": 0.0
+      },
+      "neutral": {
+        "if_else": 1.0,
+        "comparative": 0.99,
+        "neutral": 0.98,
+        "contrastive": 0.94,
+        "causal": 0.92,
+        "consensus": 0.9,
+        "historical": 0.84,
+        "paper": 0.0
+      },
+      "contradiction": {
+        "comparative": 1.0,
+        "contrastive": 0.99,
+        "causal": 0.97,
+        "neutral": 0.94,
+        "consensus": 0.92,
+        "historical": 0.88,
+        "if_else": 0.84,
+        "paper": 0.0
+      }
+    },
+    "SINGLEVIEW_DIVERSE_TYPE_PRIOR": {
+      "entailment": {
+        "historical": 1.0,
+        "consensus": 0.98,
+        "contrastive": 0.97,
+        "causal": 0.94,
+        "neutral": 0.92,
+        "if_else": 0.84,
+        "comparative": 0.82,
+        "paper": 0.0
+      },
+      "neutral": {
+        "if_else": 1.0,
+        "comparative": 0.99,
+        "neutral": 0.98,
+        "contrastive": 0.94,
+        "causal": 0.89,
+        "consensus": 0.88,
+        "historical": 0.8,
+        "paper": 0.0
+      },
+      "contradiction": {
+        "comparative": 1.0,
+        "contrastive": 1.0,
+        "causal": 0.98,
+        "neutral": 0.93,
+        "consensus": 0.9,
+        "historical": 0.84,
+        "if_else": 0.82,
+        "paper": 0.0
+      }
+    }
+  },
+  "cqa_sources": [
+    "historical",
+    "consensus",
+    "contrastive",
+    "causal",
+    "neutral",
+    "if_else",
+    "comparative"
+  ],
+  "cqa_source_priors": {
+    "BASE_SOURCE_PRIOR": {
+      "causal": 1.0,
+      "if_else": 0.99,
+      "neutral": 0.98,
+      "contrastive": 0.975,
+      "historical": 0.94,
+      "consensus": 0.84,
+      "comparative": 0.8
+    },
+    "SUPERCLEAN_SOURCE_PRIOR": {
+      "causal": 1.0,
+      "if_else": 0.995,
+      "neutral": 0.985,
+      "contrastive": 0.975,
+      "historical": 0.95,
+      "consensus": 0.8,
+      "comparative": 0.76
+    },
+    "DIVERSE_SOURCE_PRIOR": {
+      "causal": 1.0,
+      "historical": 0.98,
+      "if_else": 0.97,
+      "neutral": 0.96,
+      "contrastive": 0.95,
+      "consensus": 0.92,
+      "comparative": 0.9
+    },
+    "EXPERT_SOURCE_PRIOR": {
+      "causal": 1.0,
+      "if_else": 0.995,
+      "neutral": 0.985,
+      "contrastive": 0.975,
+      "historical": 0.94,
+      "consensus": 0.82,
+      "comparative": 0.79
+    }
+  },
+  "cqa_pack_profiles": {
+    "base_profiles": {
+      "judge_student_multiview": {
+        "vote_prior": "BASE_SOURCE_PRIOR",
+        "score_prior": "BASE_SOURCE_PRIOR",
+        "preferred_sources": [
+          "causal",
+          "contrastive",
+          "if_else",
+          "neutral"
+        ],
+        "ideal_word_max": 110,
+        "hard_word_max": 140,
+        "overlap_weight": 0.58,
+        "agreement_weight": 0.18,
+        "margin_weight": 0.08,
+        "min_agreement": 2,
+        "min_margin": 1.2,
+        "min_score": 1.65,
+        "allow_secondary": true,
+        "similarity_limit": 0.78,
+        "max_secondary_gap": 0.5,
+        "post_quantile": 0.12,
+        "cap": 12000,
+        "max_per_example": 2,
+        "source_order": "BASE_SOURCE_PRIOR"
+      },
+      "judge_student_multiview_hybrid_balanced": {
+        "vote_prior": "BASE_SOURCE_PRIOR",
+        "score_prior": "EXPERT_SOURCE_PRIOR",
+        "preferred_sources": [
+          "causal",
+          "contrastive",
+          "historical",
+          "if_else",
+          "neutral"
+        ],
+        "ideal_word_max": 100,
+        "hard_word_max": 132,
+        "overlap_weight": 0.62,
+        "agreement_weight": 0.2,
+        "margin_weight": 0.1,
+        "min_agreement": 3,
+        "min_margin": 1.6,
+        "min_score": 1.95,
+        "allow_secondary": true,
+        "similarity_limit": 0.74,
+        "max_secondary_gap": 0.42,
+        "post_quantile": 0.22,
+        "cap": 10500,
+        "max_per_example": 2,
+        "source_order": "EXPERT_SOURCE_PRIOR"
+      },
+      "judge_student_singleview_superclean_balanced": {
+        "vote_prior": "SUPERCLEAN_SOURCE_PRIOR",
+        "score_prior": "SUPERCLEAN_SOURCE_PRIOR",
+        "preferred_sources": [
+          "causal",
+          "contrastive",
+          "if_else",
+          "neutral"
+        ],
+        "ideal_word_max": 96,
+        "hard_word_max": 124,
+        "overlap_weight": 0.66,
+        "agreement_weight": 0.22,
+        "margin_weight": 0.12,
+        "min_agreement": 3,
+        "min_margin": 1.8,
+        "min_score": 2.05,
+        "allow_secondary": false,
+        "similarity_limit": 0.72,
+        "max_secondary_gap": 0.0,
+        "post_quantile": 0.34,
+        "cap": 8000,
+        "max_per_example": 1,
+        "source_order": "SUPERCLEAN_SOURCE_PRIOR"
+      },
+      "judge_student_singleview_diverse_balanced": {
+        "vote_prior": "DIVERSE_SOURCE_PRIOR",
+        "score_prior": "DIVERSE_SOURCE_PRIOR",
+        "preferred_sources": [
+          "causal",
+          "comparative",
+          "consensus",
+          "contrastive",
+          "historical",
+          "if_else"
+        ],
+        "ideal_word_max": 104,
+        "hard_word_max": 132,
+        "overlap_weight": 0.6,
+        "agreement_weight": 0.18,
+        "margin_weight": 0.09,
+        "min_agreement": 2,
+        "min_margin": 1.45,
+        "min_score": 1.78,
+        "allow_secondary": false,
+        "similarity_limit": 0.72,
+        "max_secondary_gap": 0.0,
+        "post_quantile": 0.24,
+        "cap": 8500,
+        "max_per_example": 1,
+        "source_order": "DIVERSE_SOURCE_PRIOR"
+      }
+    },
+    "main_packs": {
+      "judge_student_boundary_mix_balanced": {
+        "source": "boundary_rows",
+        "cap": 8500,
+        "max_per_example": 1,
+        "band_column": "boundary_band",
+        "allowed_bands": [
+          "easy",
+          "boundary"
+        ],
+        "source_order": "EXPERT_SOURCE_PRIOR"
+      },
+      "judge_student_boundary_bridge_balanced": {
+        "source": "boundary_rows",
+        "cap": 10500,
+        "max_per_example": 2,
+        "band_column": "boundary_band",
+        "allowed_bands": [
+          "easy",
+          "boundary",
+          "bridge"
+        ],
+        "source_order": "EXPERT_SOURCE_PRIOR"
+      },
+      "judge_student_boundary_specialist_balanced": {
+        "source": "boundary_rows",
+        "filter_sources": [
+          "historical",
+          "contrastive",
+          "comparative",
+          "if_else",
+          "consensus"
+        ],
+        "cap": 9000,
+        "max_per_example": 2,
+        "band_column": "boundary_band",
+        "allowed_bands": [
+          "boundary",
+          "bridge"
+        ],
+        "source_order": "EXPERT_SOURCE_PRIOR"
+      },
+      "judge_student_shortcut_aware_balanced": {
+        "source": "shortcut_rows",
+        "cap": 9000,
+        "max_per_example": 2,
+        "band_column": "shortcut_band",
+        "allowed_bands": [
+          "challenge",
+          "bridge",
+          "easy"
+        ],
+        "band_mix": [
+          [
+            "challenge",
+            0.35
+          ],
+          [
+            "bridge",
+            0.4
+          ],
+          [
+            "easy",
+            0.25
+          ]
+        ],
+        "source_order": "DIVERSE_SOURCE_PRIOR"
+      }
+    }
+  },
+  "cqa_shortcut_scoring_profile": {
+    "non_challenge_score_prior": "DIVERSE_SOURCE_PRIOR",
+    "challenge_score_prior": "EXPERT_SOURCE_PRIOR",
+    "shortcut_bonus_weight": 0.12,
+    "score_profile": {
+      "ideal_word_max": 100,
+      "hard_word_max": 136,
+      "overlap_weight": 0.6,
+      "agreement_weight": 0.16,
+      "margin_weight": 0.08,
+      "preferred_sources": [
+        "contrastive",
+        "if_else",
+        "historical",
+        "causal",
+        "neutral"
+      ]
+    }
+  },
+  "cqa_shortcut_secondary": {
+    "challenge_similarity_limit": 0.72,
+    "default_similarity_limit": 0.68,
+    "max_secondary_gap": 0.42
+  },
+  "cqa_derived_pack_profiles": {
+    "judge_hybrid_core_balanced": {
+      "source_pack": "judge_student_multiview_hybrid_balanced",
+      "score_quantile": 0.45,
+      "margin_quantile": 0.35,
+      "cap": 8000,
+      "max_per_example": 1,
+      "source_order": "EXPERT_SOURCE_PRIOR"
+    },
+    "judge_expert_hybrid_fusion_balanced": {
+      "inputs": [
+        {
+          "pack": "judge_student_multiview_hybrid_balanced",
+          "view_rank": 1,
+          "bonus": 0.24
+        },
+        {
+          "pack": "judge_student_singleview_superclean_balanced",
+          "bonus": 0.32
+        },
+        {
+          "pack": "judge_student_multiview",
+          "filter_sources": [
+            "contrastive",
+            "if_else",
+            "causal"
+          ],
+          "bonus": 0.18
+        }
+      ],
+      "cap": 9000,
+      "max_per_example": 2,
+      "source_order": "EXPERT_SOURCE_PRIOR"
+    },
+    "judge_precision_diverse_mix_balanced": {
+      "inputs": [
+        {
+          "pack": "judge_student_singleview_superclean_balanced",
+          "bonus": 0.36
+        },
+        {
+          "pack": "judge_student_singleview_diverse_balanced",
+          "bonus": 0.18
+        },
+        {
+          "pack": "judge_student_multiview_hybrid_balanced",
+          "bonus": 0.14
+        },
+        {
+          "pack": "judge_student_multiview",
+          "bonus": 0.08
+        }
+      ],
+      "cap": 9000,
+      "max_per_example": 2,
+      "source_order": "DIVERSE_SOURCE_PRIOR"
+    },
+    "judge_student_multiview_hybrid_cleanfusion": {
+      "inputs": [
+        {
+          "pack": "judge_student_singleview_superclean_balanced",
+          "bonus": 0.4
+        },
+        {
+          "pack": "judge_student_multiview_hybrid_balanced",
+          "view_rank": 1,
+          "bonus": 0.1
+        },
+        {
+          "pack": "judge_student_multiview_hybrid_balanced",
+          "view_rank": 2,
+          "bonus": 0.04
+        }
+      ],
+      "cap": 9500,
+      "max_per_example": 2,
+      "source_order": "EXPERT_SOURCE_PRIOR"
+    }
+  },
+  "esnli_length_score": {
+    "short": [
+      {
+        "max_words": 7,
+        "score": -0.8
+      },
+      {
+        "max_words": 64,
+        "score": 1.15
+      },
+      {
+        "max_words": 120,
+        "score": 0.55
+      },
+      {
+        "max_words": 180,
+        "score": 0.05
+      },
+      {
+        "score": -0.85
+      }
+    ],
+    "default": [
+      {
+        "max_words": 5,
+        "score": -1.0
+      },
+      {
+        "max_words": 80,
+        "score": 1.0
+      },
+      {
+        "max_words": 180,
+        "score": 0.6
+      },
+      {
+        "max_words": 260,
+        "score": 0.2
+      },
+      {
+        "score": -0.6
+      }
+    ]
+  },
+  "esnli_common_scoring": {
+    "cue_bonus_weight": 0.12,
+    "cue_bonus_cap": 0.48,
+    "label_mention_bonus": 0.25,
+    "answer_format_bonus": 0.15,
+    "teaching_cue_weight": 0.18,
+    "teaching_cue_cap": 0.72,
+    "ambiguity_two_label_penalty": -0.45,
+    "ambiguity_one_label_penalty": -0.2,
+    "hedge_penalty": -0.15,
+    "teachability_ideal_min_words": 10,
+    "teachability_ideal_max_words": 64,
+    "teachability_ideal_bonus": 0.35,
+    "teachability_ok_min_words": 65,
+    "teachability_ok_max_words": 96,
+    "teachability_ok_bonus": 0.12,
+    "teachability_long_word_min": 141,
+    "teachability_long_penalty": -0.25
+  },
+  "esnli_scoring_strategies": {
+    "default": {
+      "label_match_score": 3.0,
+      "label_mismatch_score": -2.0,
+      "length_weight": 0.9,
+      "overlap_weight": 0.9
+    },
+    "thesis": {
+      "label_match_score": 3.2,
+      "label_mismatch_score": -2.2,
+      "preferred_sources": "THESIS_PREFERRED_SOURCES",
+      "preferred_bonus": 0.45,
+      "length_weight": 1.0,
+      "overlap_weight": 0.85
+    },
+    "agreement": {
+      "label_match_score": 3.4,
+      "label_mismatch_score": -2.4,
+      "preferred_sources": "AGREEMENT_PREFERRED_SOURCES",
+      "preferred_bonus": 0.35,
+      "agreement_count_weight": 0.55,
+      "agreement_ratio_weight": 0.25,
+      "length_weight": 0.95,
+      "overlap_weight": 0.9
+    },
+    "guarded": {
+      "label_match_score": 3.6,
+      "label_mismatch_score": -3.0,
+      "preferred_sources": "GUARDED_PREFERRED_SOURCES",
+      "preferred_bonus": 0.45,
+      "agreement_count_weight": 0.75,
+      "agreement_ratio_weight": 0.45,
+      "length_weight": 1.0,
+      "overlap_weight": 0.95
+    },
+    "guarded_short": {
+      "label_match_score": 3.7,
+      "label_mismatch_score": -3.0,
+      "preferred_sources": "GUARDED_PREFERRED_SOURCES",
+      "preferred_bonus": 0.48,
+      "agreement_count_weight": 0.78,
+      "agreement_ratio_weight": 0.42,
+      "length_weight": 1.05,
+      "overlap_weight": 0.95,
+      "strict_bonus": {
+        "min_words": 12,
+        "max_words": 64,
+        "positive": 0.4,
+        "long_word_min": 111,
+        "long_penalty": -0.25
+      }
+    },
+    "guarded_balanced": {
+      "label_match_score": 3.45,
+      "label_mismatch_score": -2.8,
+      "preferred_sources": "GUARDED_PREFERRED_SOURCES",
+      "preferred_bonus": 0.22,
+      "diversity_sources": [
+        "comparative",
+        "causal",
+        "consensus",
+        "if_else"
+      ],
+      "diversity_bonus": 0.25,
+      "agreement_count_weight": 0.68,
+      "agreement_ratio_weight": 0.38,
+      "length_weight": 0.95,
+      "overlap_weight": 0.95
+    },
+    "guarded_hardclean": {
+      "label_match_score": 3.9,
+      "label_mismatch_score": -3.2,
+      "preferred_sources": "GUARDED_PREFERRED_SOURCES",
+      "preferred_bonus": 0.52,
+      "agreement_count_weight": 0.9,
+      "agreement_ratio_weight": 0.55,
+      "length_weight": 1.05,
+      "overlap_weight": 1.0,
+      "strict_bonus": {
+        "max_words": 80,
+        "positive": 0.35,
+        "long_word_min": 81,
+        "long_penalty": -0.4
+      }
+    },
+    "label_priority": {
+      "label_match_score": 4.1,
+      "label_mismatch_score": -3.2,
+      "preferred_sources": "GUARDED_PREFERRED_SOURCES",
+      "preferred_bonus": 0.35,
+      "agreement_count_weight": 0.55,
+      "agreement_ratio_weight": 0.35,
+      "margin_weight": 0.75,
+      "length_weight": 0.95,
+      "overlap_weight": 0.9
+    },
+    "label_priority_guarded": {
+      "label_match_score": 4.2,
+      "label_mismatch_score": -3.3,
+      "preferred_sources": "GUARDED_PREFERRED_SOURCES",
+      "preferred_bonus": 0.42,
+      "agreement_count_weight": 0.7,
+      "agreement_ratio_weight": 0.42,
+      "margin_weight": 0.9,
+      "length_weight": 1.0,
+      "overlap_weight": 0.95
+    },
+    "label_priority_guarded_balanced": {
+      "label_match_score": 4.0,
+      "label_mismatch_score": -3.15,
+      "preferred_sources": "GUARDED_PREFERRED_SOURCES",
+      "preferred_bonus": 0.28,
+      "diversity_sources": [
+        "comparative",
+        "causal",
+        "consensus",
+        "if_else"
+      ],
+      "diversity_bonus": 0.18,
+      "agreement_count_weight": 0.62,
+      "agreement_ratio_weight": 0.38,
+      "margin_weight": 0.82,
+      "length_weight": 0.98,
+      "overlap_weight": 0.95
+    },
+    "label_expert_guarded": {
+      "label_match_score": 4.3,
+      "label_mismatch_score": -3.25,
+      "agreement_count_weight": 0.72,
+      "agreement_ratio_weight": 0.45,
+      "margin_weight": 0.95,
+      "length_weight": 1.0,
+      "overlap_weight": 0.98
+    },
+    "label_expert_guarded_balanced": {
+      "label_match_score": 4.15,
+      "label_mismatch_score": -3.15,
+      "agreement_count_weight": 0.68,
+      "agreement_ratio_weight": 0.42,
+      "margin_weight": 0.9,
+      "diversity_sources": [
+        "comparative",
+        "causal",
+        "consensus",
+        "if_else"
+      ],
+      "diversity_bonus": 0.12,
+      "length_weight": 0.98,
+      "overlap_weight": 0.97
+    },
+    "student_signal": {
+      "label_match_score": 4.35,
+      "label_mismatch_score": -3.3,
+      "agreement_count_weight": 0.75,
+      "agreement_ratio_weight": 0.45,
+      "margin_weight": 1.0,
+      "length_weight": 1.0,
+      "overlap_weight": 1.0,
+      "include_teaching": true,
+      "include_teachability": true,
+      "include_ambiguity": true
+    },
+    "student_signal_hardclean": {
+      "label_match_score": 4.5,
+      "label_mismatch_score": -3.5,
+      "agreement_count_weight": 0.85,
+      "agreement_ratio_weight": 0.5,
+      "margin_weight": 1.1,
+      "length_weight": 1.02,
+      "overlap_weight": 1.02,
+      "include_teaching": true,
+      "include_teachability": true,
+      "include_ambiguity": true,
+      "strict_bonus": {
+        "min_words": 12,
+        "max_words": 72,
+        "positive": 0.18,
+        "long_word_min": 111,
+        "long_penalty": -0.22
+      }
+    },
+    "student_signal_balanced": {
+      "label_match_score": 4.25,
+      "label_mismatch_score": -3.2,
+      "agreement_count_weight": 0.72,
+      "agreement_ratio_weight": 0.42,
+      "margin_weight": 0.95,
+      "diversity_sources": [
+        "comparative",
+        "causal",
+        "consensus",
+        "if_else"
+      ],
+      "diversity_bonus": 0.1,
+      "length_weight": 0.98,
+      "overlap_weight": 1.0,
+      "include_teaching": true,
+      "include_teachability": true,
+      "include_ambiguity": true
+    },
+    "student_multiview": {
+      "label_match_score": 4.3,
+      "label_mismatch_score": -3.25,
+      "agreement_count_weight": 0.74,
+      "agreement_ratio_weight": 0.45,
+      "margin_weight": 0.98,
+      "diversity_sources": [
+        "comparative",
+        "causal",
+        "consensus",
+        "if_else"
+      ],
+      "diversity_bonus": 0.08,
+      "length_weight": 1.0,
+      "overlap_weight": 1.0,
+      "include_teaching": true,
+      "include_teachability": true,
+      "include_ambiguity": true
+    },
+    "student_multiview_elite": {
+      "label_match_score": 4.45,
+      "label_mismatch_score": -3.4,
+      "agreement_count_weight": 0.8,
+      "agreement_ratio_weight": 0.5,
+      "margin_weight": 1.08,
+      "diversity_sources": [
+        "comparative",
+        "historical",
+        "contrastive",
+        "if_else"
+      ],
+      "diversity_bonus": 0.14,
+      "length_weight": 1.02,
+      "overlap_weight": 1.02,
+      "include_teaching": true,
+      "include_teachability": true,
+      "include_ambiguity": true,
+      "strict_bonus": {
+        "min_words": 12,
+        "max_words": 96,
+        "positive": 0.16,
+        "long_word_min": 129,
+        "long_penalty": -0.18
+      }
+    },
+    "student_multiview_hardclean_balanced": {
+      "label_match_score": 4.55,
+      "label_mismatch_score": -3.5,
+      "agreement_count_weight": 0.86,
+      "agreement_ratio_weight": 0.54,
+      "margin_weight": 1.15,
+      "diversity_sources": [
+        "comparative",
+        "historical",
+        "contrastive",
+        "if_else"
+      ],
+      "diversity_bonus": 0.18,
+      "length_weight": 1.04,
+      "overlap_weight": 1.03,
+      "include_teaching": true,
+      "include_teachability": true,
+      "include_ambiguity": true,
+      "strict_bonus": {
+        "min_words": 12,
+        "max_words": 84,
+        "positive": 0.24,
+        "long_word_min": 111,
+        "long_penalty": -0.25
+      }
+    },
+    "student_multiview_hybrid_balanced": {
+      "label_match_score": 4.42,
+      "label_mismatch_score": -3.35,
+      "agreement_count_weight": 0.79,
+      "agreement_ratio_weight": 0.5,
+      "margin_weight": 1.06,
+      "diversity_sources": [
+        "comparative",
+        "historical",
+        "contrastive",
+        "if_else"
+      ],
+      "diversity_bonus": 0.16,
+      "length_weight": 1.02,
+      "overlap_weight": 1.0,
+      "include_teaching": true,
+      "include_teachability": true,
+      "include_ambiguity": true,
+      "strict_bonus": {
+        "min_words": 10,
+        "max_words": 96,
+        "positive": 0.18,
+        "long_word_min": 121,
+        "long_penalty": -0.18
+      }
+    },
+    "student_singleview_superclean_balanced": {
+      "label_match_score": 4.6,
+      "label_mismatch_score": -3.55,
+      "agreement_count_weight": 0.88,
+      "agreement_ratio_weight": 0.56,
+      "margin_weight": 1.18,
+      "specialist_sources": [
+        "historical",
+        "contrastive",
+        "comparative",
+        "if_else"
+      ],
+      "specialist_bonus": 0.2,
+      "length_weight": 1.05,
+      "overlap_weight": 1.04,
+      "include_teaching": true,
+      "include_teachability": true,
+      "include_ambiguity": true,
+      "strict_bonus": {
+        "min_words": 12,
+        "max_words": 84,
+        "positive": 0.28,
+        "long_word_min": 109,
+        "long_penalty": -0.3
+      }
+    },
+    "student_multiview_sourceblend_balanced": {
+      "label_match_score": 4.48,
+      "label_mismatch_score": -3.4,
+      "agreement_count_weight": 0.82,
+      "agreement_ratio_weight": 0.52,
+      "margin_weight": 1.08,
+      "diversity_sources": [
+        "historical",
+        "comparative",
+        "contrastive",
+        "if_else",
+        "consensus"
+      ],
+      "diversity_bonus": 0.22,
+      "length_weight": 1.02,
+      "overlap_weight": 1.0,
+      "include_teaching": true,
+      "include_teachability": true,
+      "include_ambiguity": true,
+      "strict_bonus": {
+        "min_words": 10,
+        "max_words": 100,
+        "positive": 0.16,
+        "long_word_min": 125,
+        "long_penalty": -0.16
+      }
+    },
+    "student_singleview_diverse_balanced": {
+      "label_match_score": 4.5,
+      "label_mismatch_score": -3.42,
+      "agreement_count_weight": 0.83,
+      "agreement_ratio_weight": 0.54,
+      "margin_weight": 1.1,
+      "diversity_sources": [
+        "historical",
+        "comparative",
+        "contrastive",
+        "if_else",
+        "consensus"
+      ],
+      "diversity_bonus": 0.2,
+      "length_weight": 1.03,
+      "overlap_weight": 1.02,
+      "include_teaching": true,
+      "include_teachability": true,
+      "include_ambiguity": true,
+      "strict_bonus": {
+        "min_words": 10,
+        "max_words": 92,
+        "positive": 0.2,
+        "long_word_min": 113,
+        "long_penalty": -0.2
+      }
+    },
+    "all_views": {
+      "label_match_score": 4.25,
+      "label_mismatch_score": -3.2,
+      "agreement_count_weight": 0.72,
+      "agreement_ratio_weight": 0.44,
+      "margin_weight": 0.95,
+      "length_weight": 1.0,
+      "overlap_weight": 1.0,
+      "include_teaching": true,
+      "include_teachability": true,
+      "include_ambiguity": true
+    },
+    "all_views_consensus": {
+      "label_match_score": 4.25,
+      "label_mismatch_score": -3.2,
+      "agreement_count_weight": 0.72,
+      "agreement_ratio_weight": 0.44,
+      "margin_weight": 0.95,
+      "length_weight": 1.0,
+      "overlap_weight": 1.0,
+      "include_teaching": true,
+      "include_teachability": true,
+      "include_ambiguity": true
+    }
+  },
+  "esnli_secondary_multiview": {
+    "default": {
+      "similarity_limit": 0.82,
+      "min_agreement": 2,
+      "max_score_gap": 1.1
+    },
+    "student_multiview_elite": {
+      "similarity_limit": 0.72,
+      "min_agreement": 3,
+      "min_label_support_margin": 1.0,
+      "max_score_gap": 0.55,
+      "min_judge_score": 18.2,
+      "word_count_min": 10,
+      "word_count_max": 120,
+      "min_source_prior": 0.84
+    },
+    "student_multiview_hardclean_balanced": {
+      "similarity_limit": 0.68,
+      "min_agreement": 4,
+      "min_label_support_margin": 1.25,
+      "max_score_gap": 0.35,
+      "min_judge_score": 19.0,
+      "word_count_min": 10,
+      "word_count_max": 96,
+      "min_source_prior": 0.9
+    },
+    "student_multiview_hybrid_balanced": {
+      "similarity_limit": 0.74,
+      "min_agreement": 3,
+      "min_label_support_margin": 1.05,
+      "max_score_gap": 0.5,
+      "min_judge_score": 18.5,
+      "word_count_min": 10,
+      "word_count_max": 110,
+      "min_source_prior": 0.82
+    },
+    "student_multiview_sourceblend_balanced": {
+      "similarity_limit": 0.7,
+      "min_agreement": 3,
+      "min_label_support_margin": 1.1,
+      "max_score_gap": 0.45,
+      "min_judge_score": 18.7,
+      "word_count_min": 10,
+      "word_count_max": 112,
+      "min_source_prior": 0.88
+    }
+  },
+  "esnli_training_vote_margin_thresholds": {
+    "default": 1.35,
+    "label_priority": 1.25,
+    "student_multiview_hardclean_balanced": 1.65,
+    "student_multiview_hybrid_balanced": 1.55,
+    "student_multiview_sourceblend_balanced": 1.52,
+    "student_singleview_superclean_balanced": 1.6,
+    "student_singleview_diverse_balanced": 1.5,
+    "student_multiview_elite": 1.5,
+    "fallback": 1.25
+  },
+  "esnli_keep_rules": {
+    "default": {
+      "clauses": [
+        {
+          "min_matched_count": 4
+        },
+        {
+          "min_matched_count": 3,
+          "min_support_margin": 1.1,
+          "min_judge_score": 8.0,
+          "require_high_quality_source": true
+        }
+      ]
+    },
+    "guarded": {
+      "clauses": [
+        {
+          "min_matched_count": 3
+        },
+        {
+          "min_matched_count": 2,
+          "min_support_margin": 0.75,
+          "min_judge_score": 7.0,
+          "require_high_quality_source": true
+        }
+      ]
+    },
+    "guarded_short": {
+      "clauses": [
+        {
+          "min_matched_count": 3
+        },
+        {
+          "min_matched_count": 2,
+          "min_support_margin": 0.9,
+          "min_judge_score": 7.4,
+          "require_high_quality_source": true,
+          "word_count_min": 12,
+          "word_count_max": 96
+        }
+      ]
+    },
+    "guarded_balanced": {
+      "clauses": [
+        {
+          "min_matched_count": 3
+        },
+        {
+          "min_matched_count": 2,
+          "min_support_margin": 0.65,
+          "min_judge_score": 6.8
+        }
+      ]
+    },
+    "label_priority_guarded": {
+      "clauses": [
+        {
+          "min_matched_count": 3,
+          "min_support_margin": 0.9,
+          "min_judge_score": 8.2
+        },
+        {
+          "min_matched_count": 2,
+          "min_support_margin": 1.25,
+          "min_judge_score": 8.8,
+          "require_high_quality_source": true
+        }
+      ]
+    },
+    "label_priority_guarded_balanced": {
+      "clauses": [
+        {
+          "min_matched_count": 3,
+          "min_support_margin": 0.8,
+          "min_judge_score": 7.8
+        },
+        {
+          "min_matched_count": 2,
+          "min_support_margin": 1.1,
+          "min_judge_score": 8.4
+        }
+      ]
+    },
+    "label_expert_guarded": {
+      "clauses": [
+        {
+          "min_matched_count": 3,
+          "min_support_margin": 0.85,
+          "min_judge_score": 8.4
+        },
+        {
+          "min_matched_count": 2,
+          "min_support_margin": 1.15,
+          "min_judge_score": 9.0
+        }
+      ]
+    },
+    "label_expert_guarded_balanced": {
+      "clauses": [
+        {
+          "min_matched_count": 3,
+          "min_support_margin": 0.75,
+          "min_judge_score": 8.0
+        },
+        {
+          "min_matched_count": 2,
+          "min_support_margin": 1.05,
+          "min_judge_score": 8.6
+        }
+      ]
+    },
+    "student_signal": {
+      "clauses": [
+        {
+          "min_matched_count": 3,
+          "min_support_margin": 0.9,
+          "min_judge_score": 8.6,
+          "word_count_min": 10,
+          "word_count_max": 96
+        },
+        {
+          "min_matched_count": 2,
+          "min_support_margin": 1.35,
+          "min_judge_score": 9.2,
+          "require_explicit_label_support": true,
+          "word_count_min": 10,
+          "word_count_max": 110
+        }
+      ]
+    },
+    "student_signal_hardclean": {
+      "clauses": [
+        {
+          "min_matched_count": 3,
+          "min_support_margin": 1.0,
+          "min_judge_score": 9.0,
+          "word_count_min": 12,
+          "word_count_max": 84
+        },
+        {
+          "min_matched_count": 2,
+          "min_support_margin": 1.45,
+          "min_judge_score": 9.6,
+          "require_explicit_label_support": true,
+          "word_count_min": 12,
+          "word_count_max": 96
+        }
+      ]
+    },
+    "student_signal_balanced": {
+      "clauses": [
+        {
+          "min_matched_count": 3,
+          "min_support_margin": 0.8,
+          "min_judge_score": 8.3,
+          "word_count_min": 10,
+          "word_count_max": 110
+        },
+        {
+          "min_matched_count": 2,
+          "min_support_margin": 1.2,
+          "min_judge_score": 8.9,
+          "require_explicit_label_support": true,
+          "word_count_min": 10,
+          "word_count_max": 120
+        }
+      ]
+    },
+    "student_multiview": {
+      "clauses": [
+        {
+          "min_matched_count": 3,
+          "min_support_margin": 0.85,
+          "min_judge_score": 8.4,
+          "word_count_min": 10,
+          "word_count_max": 110
+        },
+        {
+          "min_matched_count": 2,
+          "min_support_margin": 1.2,
+          "min_judge_score": 8.9,
+          "require_explicit_label_support": true,
+          "word_count_min": 10,
+          "word_count_max": 120
+        }
+      ]
+    },
+    "student_multiview_elite": {
+      "clauses": [
+        {
+          "min_matched_count": 3,
+          "min_support_margin": 1.0,
+          "min_judge_score": 9.0,
+          "word_count_min": 10,
+          "word_count_max": 96,
+          "require_high_quality_source": true
+        },
+        {
+          "min_matched_count": 2,
+          "min_support_margin": 1.45,
+          "min_judge_score": 9.5,
+          "require_explicit_label_support": true,
+          "word_count_min": 10,
+          "word_count_max": 110,
+          "require_high_quality_source": true
+        }
+      ]
+    },
+    "student_multiview_hardclean_balanced": {
+      "clauses": [
+        {
+          "min_matched_count": 3,
+          "min_support_margin": 1.15,
+          "min_judge_score": 9.3,
+          "word_count_min": 10,
+          "word_count_max": 90,
+          "require_high_quality_source": true
+        },
+        {
+          "min_matched_count": 2,
+          "min_support_margin": 1.6,
+          "min_judge_score": 9.9,
+          "require_explicit_label_support": true,
+          "word_count_min": 10,
+          "word_count_max": 104,
+          "require_high_quality_source": true
+        }
+      ]
+    },
+    "student_multiview_hybrid_balanced": {
+      "clauses": [
+        {
+          "min_matched_count": 3,
+          "min_support_margin": 1.05,
+          "min_judge_score": 9.1,
+          "word_count_min": 10,
+          "word_count_max": 96,
+          "require_high_quality_source": true
+        },
+        {
+          "min_matched_count": 2,
+          "min_support_margin": 1.5,
+          "min_judge_score": 9.6,
+          "require_explicit_label_support": true,
+          "word_count_min": 10,
+          "word_count_max": 108,
+          "require_high_quality_source": true
+        }
+      ]
+    },
+    "student_singleview_superclean_balanced": {
+      "clauses": [
+        {
+          "min_matched_count": 3,
+          "min_support_margin": 1.2,
+          "min_judge_score": 9.4,
+          "word_count_min": 10,
+          "word_count_max": 88,
+          "require_high_quality_source": true
+        },
+        {
+          "min_matched_count": 2,
+          "min_support_margin": 1.7,
+          "min_judge_score": 10.0,
+          "require_explicit_label_support": true,
+          "word_count_min": 10,
+          "word_count_max": 100,
+          "require_high_quality_source": true
+        }
+      ]
+    },
+    "student_multiview_sourceblend_balanced": {
+      "clauses": [
+        {
+          "min_matched_count": 3,
+          "min_support_margin": 1.08,
+          "min_judge_score": 9.15,
+          "word_count_min": 10,
+          "word_count_max": 102,
+          "require_high_quality_source": true
+        },
+        {
+          "min_matched_count": 2,
+          "min_support_margin": 1.55,
+          "min_judge_score": 9.7,
+          "require_explicit_label_support": true,
+          "word_count_min": 10,
+          "word_count_max": 112,
+          "require_high_quality_source": true
+        }
+      ]
+    },
+    "student_singleview_diverse_balanced": {
+      "clauses": [
+        {
+          "min_matched_count": 3,
+          "min_support_margin": 1.1,
+          "min_judge_score": 9.25,
+          "word_count_min": 10,
+          "word_count_max": 92,
+          "require_high_quality_source": true
+        },
+        {
+          "min_matched_count": 2,
+          "min_support_margin": 1.55,
+          "min_judge_score": 9.8,
+          "require_explicit_label_support": true,
+          "word_count_min": 10,
+          "word_count_max": 104,
+          "require_high_quality_source": true
+        }
+      ]
+    }
   }
 }

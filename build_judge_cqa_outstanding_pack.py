@@ -12,9 +12,8 @@ from config_utils import load_config
 
 
 API_DIR = Path(os.environ.get("CQA_API_DIR", "[API] CQA"))
-SOURCES = ["historical", "consensus", "contrastive", "causal", "neutral", "if_else", "comparative"]
-
 PAPER_CONFIG = load_config()
+SOURCES = PAPER_CONFIG["cqa_sources"]
 CQA_BOUNDARY_PROFILE = PAPER_CONFIG["cqa_boundary_scoring_profile"].copy()
 CQA_BOUNDARY_PROFILE["preferred_sources"] = set(CQA_BOUNDARY_PROFILE["preferred_sources"])
 BASE_SOURCE_PRIOR = CQA_BOUNDARY_PROFILE["source_prior"]
@@ -22,35 +21,15 @@ CQA_BOUNDARY_THRESHOLDS = PAPER_CONFIG["difficulty_band_thresholds"]["cqa_bounda
 CQA_BOUNDARY_SELECTION_CONFIG = PAPER_CONFIG["boundary_mix_selection"]["cqa"]
 CQA_BOUNDARY_BRIDGE_CONFIG = PAPER_CONFIG["boundary_bridge_selection"]["cqa"]
 
-SUPERCLEAN_SOURCE_PRIOR = {
-    "causal": 1.00,
-    "if_else": 0.995,
-    "neutral": 0.985,
-    "contrastive": 0.975,
-    "historical": 0.95,
-    "consensus": 0.80,
-    "comparative": 0.76,
-}
-
-DIVERSE_SOURCE_PRIOR = {
-    "causal": 1.00,
-    "historical": 0.98,
-    "if_else": 0.97,
-    "neutral": 0.96,
-    "contrastive": 0.95,
-    "consensus": 0.92,
-    "comparative": 0.90,
-}
-
-EXPERT_SOURCE_PRIOR = {
-    "causal": 1.00,
-    "if_else": 0.995,
-    "neutral": 0.985,
-    "contrastive": 0.975,
-    "historical": 0.94,
-    "consensus": 0.82,
-    "comparative": 0.79,
-}
+CQA_SOURCE_PRIORS = PAPER_CONFIG["cqa_source_priors"]
+SUPERCLEAN_SOURCE_PRIOR = CQA_SOURCE_PRIORS["SUPERCLEAN_SOURCE_PRIOR"]
+DIVERSE_SOURCE_PRIOR = CQA_SOURCE_PRIORS["DIVERSE_SOURCE_PRIOR"]
+EXPERT_SOURCE_PRIOR = CQA_SOURCE_PRIORS["EXPERT_SOURCE_PRIOR"]
+CQA_BASE_PROFILES = PAPER_CONFIG["cqa_pack_profiles"]["base_profiles"]
+CQA_MAIN_PACK_CONFIG = PAPER_CONFIG["cqa_pack_profiles"]["main_packs"]
+CQA_SHORTCUT_SCORING_PROFILE = PAPER_CONFIG["cqa_shortcut_scoring_profile"]
+CQA_SHORTCUT_SECONDARY_CONFIG = PAPER_CONFIG["cqa_shortcut_secondary"]
+CQA_DERIVED_PACK_CONFIG = PAPER_CONFIG["cqa_derived_pack_profiles"]
 
 FORMAT_CUES = ("so the answer is", "the correct answer")
 REASONING_CUES = ("because", "therefore", "if", "then", "means")
@@ -514,23 +493,23 @@ def build_shortcut_rows(gold_records, candidate_tables):
                 continue
             enriched = candidate.copy()
             enriched["support_overlap"] = support_overlap(candidate["premise"], candidate["hypothesis"], candidate["rationale"])
+            score_profile = CQA_SHORTCUT_SCORING_PROFILE["score_profile"].copy()
+            score_profile["preferred_sources"] = set(score_profile["preferred_sources"])
+            score_prior_name = (
+                CQA_SHORTCUT_SCORING_PROFILE["challenge_score_prior"]
+                if profile["shortcut_band"] == "challenge"
+                else CQA_SHORTCUT_SCORING_PROFILE["non_challenge_score_prior"]
+            )
             base_score = score_candidate(
                 enriched,
                 gold["gold_label"],
                 vote_margin,
                 label_counts.get(gold["gold_label"], 0),
                 len(candidates),
-                DIVERSE_SOURCE_PRIOR if profile["shortcut_band"] != "challenge" else EXPERT_SOURCE_PRIOR,
-                {
-                    "ideal_word_max": 100,
-                    "hard_word_max": 136,
-                    "overlap_weight": 0.60,
-                    "agreement_weight": 0.16,
-                    "margin_weight": 0.08,
-                    "preferred_sources": {"contrastive", "if_else", "historical", "causal", "neutral"},
-                },
+                resolve_prior(score_prior_name),
+                score_profile,
             )
-            enriched["judge_score"] = base_score + 0.12 * profile["shortcut_score"]
+            enriched["judge_score"] = base_score + CQA_SHORTCUT_SCORING_PROFILE["shortcut_bonus_weight"] * profile["shortcut_score"]
             matching.append(enriched)
         if not matching:
             continue
@@ -544,8 +523,12 @@ def build_shortcut_rows(gold_records, candidate_tables):
             best,
             matching,
             {
-                "similarity_limit": 0.72 if profile["shortcut_band"] == "challenge" else 0.68,
-                "max_secondary_gap": 0.42,
+                "similarity_limit": (
+                    CQA_SHORTCUT_SECONDARY_CONFIG["challenge_similarity_limit"]
+                    if profile["shortcut_band"] == "challenge"
+                    else CQA_SHORTCUT_SECONDARY_CONFIG["default_similarity_limit"]
+                ),
+                "max_secondary_gap": CQA_SHORTCUT_SECONDARY_CONFIG["max_secondary_gap"],
             },
         )
         if partner is not None and (profile["shortcut_band"] != "easy" or label_counts.get(gold["gold_label"], 0) >= 5):
@@ -649,54 +632,61 @@ def dedupe_by_quality(df):
     ).drop_duplicates(subset=["row_key"], keep="first")
 
 
+def derived_pack_rows(base_packs, input_specs):
+    parts = []
+    for spec in input_specs:
+        rows = base_packs[spec["pack"]]
+        if "view_rank" in spec:
+            rows = rows[rows["judge_view_rank"] == spec["view_rank"]]
+        if "filter_sources" in spec:
+            rows = rows[rows["judge_source"].isin(set(spec["filter_sources"]))]
+        parts.append(add_bonus(rows, spec["bonus"]))
+    return pd.concat(parts, ignore_index=True)
+
+
 def build_derived_packs(base_packs):
     packs = {}
-    hybrid = base_packs["judge_student_multiview_hybrid_balanced"]
-    superclean = base_packs["judge_student_singleview_superclean_balanced"]
-    diverse = base_packs["judge_student_singleview_diverse_balanced"]
-    multiview = base_packs["judge_student_multiview"]
 
-    hybrid_core = hybrid.copy()
-    hybrid_core["score_cutoff"] = hybrid_core["judge_score"].quantile(0.45)
-    hybrid_core["margin_cutoff"] = hybrid_core["voted_label_margin"].quantile(0.35)
+    core_config = CQA_DERIVED_PACK_CONFIG["judge_hybrid_core_balanced"]
+    hybrid_core = base_packs[core_config["source_pack"]].copy()
+    hybrid_core["score_cutoff"] = hybrid_core["judge_score"].quantile(core_config["score_quantile"])
+    hybrid_core["margin_cutoff"] = hybrid_core["voted_label_margin"].quantile(core_config["margin_quantile"])
     hybrid_core["agree_cutoff"] = hybrid_core["agreement_count"].median()
     hybrid_core = hybrid_core[
         (hybrid_core["judge_score"] >= hybrid_core["score_cutoff"])
         & (hybrid_core["voted_label_margin"] >= hybrid_core["margin_cutoff"])
         & (hybrid_core["agreement_count"] >= hybrid_core["agree_cutoff"])
     ].drop(columns=["score_cutoff", "margin_cutoff", "agree_cutoff"])
-    packs["judge_hybrid_core_balanced"] = source_balanced_select(hybrid_core, 8000, 1, list(EXPERT_SOURCE_PRIOR))
-
-    expert_rows = pd.concat(
-        [
-            add_bonus(hybrid[hybrid["judge_view_rank"] == 1], 0.24),
-            add_bonus(superclean, 0.32),
-            add_bonus(multiview[multiview["judge_source"].isin({"contrastive", "if_else", "causal"})], 0.18),
-        ],
-        ignore_index=True,
+    packs["judge_hybrid_core_balanced"] = source_balanced_select(
+        hybrid_core,
+        core_config["cap"],
+        core_config["max_per_example"],
+        list(resolve_prior(core_config["source_order"])),
     )
-    packs["judge_expert_hybrid_fusion_balanced"] = source_balanced_select(dedupe_by_quality(expert_rows), 9000, 2, list(EXPERT_SOURCE_PRIOR))
 
-    precision_diverse = pd.concat(
-        [
-            add_bonus(superclean, 0.36),
-            add_bonus(diverse, 0.18),
-            add_bonus(hybrid, 0.14),
-            add_bonus(multiview, 0.08),
-        ],
-        ignore_index=True,
+    expert_config = CQA_DERIVED_PACK_CONFIG["judge_expert_hybrid_fusion_balanced"]
+    packs["judge_expert_hybrid_fusion_balanced"] = source_balanced_select(
+        dedupe_by_quality(derived_pack_rows(base_packs, expert_config["inputs"])),
+        expert_config["cap"],
+        expert_config["max_per_example"],
+        list(resolve_prior(expert_config["source_order"])),
     )
-    packs["judge_precision_diverse_mix_balanced"] = source_balanced_select(dedupe_by_quality(precision_diverse), 9000, 2, list(DIVERSE_SOURCE_PRIOR))
 
-    cleanfusion = pd.concat(
-        [
-            add_bonus(superclean, 0.40),
-            add_bonus(hybrid[hybrid["judge_view_rank"] == 1], 0.10),
-            add_bonus(hybrid[hybrid["judge_view_rank"] == 2], 0.04),
-        ],
-        ignore_index=True,
+    diverse_config = CQA_DERIVED_PACK_CONFIG["judge_precision_diverse_mix_balanced"]
+    packs["judge_precision_diverse_mix_balanced"] = source_balanced_select(
+        dedupe_by_quality(derived_pack_rows(base_packs, diverse_config["inputs"])),
+        diverse_config["cap"],
+        diverse_config["max_per_example"],
+        list(resolve_prior(diverse_config["source_order"])),
     )
-    packs["judge_student_multiview_hybrid_cleanfusion"] = source_balanced_select(dedupe_by_quality(cleanfusion), 9500, 2, list(EXPERT_SOURCE_PRIOR))
+
+    cleanfusion_config = CQA_DERIVED_PACK_CONFIG["judge_student_multiview_hybrid_cleanfusion"]
+    packs["judge_student_multiview_hybrid_cleanfusion"] = source_balanced_select(
+        dedupe_by_quality(derived_pack_rows(base_packs, cleanfusion_config["inputs"])),
+        cleanfusion_config["cap"],
+        cleanfusion_config["max_per_example"],
+        list(resolve_prior(cleanfusion_config["source_order"])),
+    )
 
     return packs
 
@@ -728,132 +718,82 @@ def save_dataset(name, df):
     return report
 
 
+
+def resolve_prior(name):
+    if isinstance(name, dict):
+        return name
+    return CQA_SOURCE_PRIORS[name]
+
+
+def resolve_profile(profile):
+    resolved = profile.copy()
+    resolved["vote_prior"] = resolve_prior(resolved["vote_prior"])
+    resolved["score_prior"] = resolve_prior(resolved["score_prior"])
+    resolved["preferred_sources"] = set(resolved["preferred_sources"])
+    resolved["source_order"] = list(resolve_prior(resolved["source_order"]))
+    return resolved
+
+
+def resolve_pack_config(pack_config):
+    resolved = pack_config.copy()
+    if "allowed_bands" in resolved:
+        resolved["allowed_bands"] = set(resolved["allowed_bands"])
+    if "filter_sources" in resolved:
+        resolved["filter_sources"] = set(resolved["filter_sources"])
+    if "band_mix" in resolved:
+        resolved["band_mix"] = [tuple(item) for item in resolved["band_mix"]]
+    if "source_order" in resolved:
+        resolved["source_order"] = list(resolve_prior(resolved["source_order"]))
+    return resolved
+
 def main():
     gold_records = load_gold_records()
     candidate_tables = {source: load_candidates(source) for source in SOURCES}
 
-    base_profiles = {
-        "judge_student_multiview": {
-            "vote_prior": BASE_SOURCE_PRIOR,
-            "score_prior": BASE_SOURCE_PRIOR,
-            "preferred_sources": {"contrastive", "if_else", "causal", "neutral"},
-            "ideal_word_max": 110,
-            "hard_word_max": 140,
-            "overlap_weight": 0.58,
-            "agreement_weight": 0.18,
-            "margin_weight": 0.08,
-            "min_agreement": 2,
-            "min_margin": 1.2,
-            "min_score": 1.65,
-            "allow_secondary": True,
-            "similarity_limit": 0.78,
-            "max_secondary_gap": 0.50,
-            "post_quantile": 0.12,
-            "cap": 12000,
-            "max_per_example": 2,
-            "source_order": list(BASE_SOURCE_PRIOR),
-        },
-        "judge_student_multiview_hybrid_balanced": {
-            "vote_prior": BASE_SOURCE_PRIOR,
-            "score_prior": EXPERT_SOURCE_PRIOR,
-            "preferred_sources": {"contrastive", "if_else", "causal", "neutral", "historical"},
-            "ideal_word_max": 100,
-            "hard_word_max": 132,
-            "overlap_weight": 0.62,
-            "agreement_weight": 0.20,
-            "margin_weight": 0.10,
-            "min_agreement": 3,
-            "min_margin": 1.6,
-            "min_score": 1.95,
-            "allow_secondary": True,
-            "similarity_limit": 0.74,
-            "max_secondary_gap": 0.42,
-            "post_quantile": 0.22,
-            "cap": 10500,
-            "max_per_example": 2,
-            "source_order": list(EXPERT_SOURCE_PRIOR),
-        },
-        "judge_student_singleview_superclean_balanced": {
-            "vote_prior": SUPERCLEAN_SOURCE_PRIOR,
-            "score_prior": SUPERCLEAN_SOURCE_PRIOR,
-            "preferred_sources": {"contrastive", "if_else", "causal", "neutral"},
-            "ideal_word_max": 96,
-            "hard_word_max": 124,
-            "overlap_weight": 0.66,
-            "agreement_weight": 0.22,
-            "margin_weight": 0.12,
-            "min_agreement": 3,
-            "min_margin": 1.8,
-            "min_score": 2.05,
-            "allow_secondary": False,
-            "similarity_limit": 0.72,
-            "max_secondary_gap": 0.0,
-            "post_quantile": 0.34,
-            "cap": 8000,
-            "max_per_example": 1,
-            "source_order": list(SUPERCLEAN_SOURCE_PRIOR),
-        },
-        "judge_student_singleview_diverse_balanced": {
-            "vote_prior": DIVERSE_SOURCE_PRIOR,
-            "score_prior": DIVERSE_SOURCE_PRIOR,
-            "preferred_sources": {"contrastive", "historical", "if_else", "causal", "consensus", "comparative"},
-            "ideal_word_max": 104,
-            "hard_word_max": 132,
-            "overlap_weight": 0.60,
-            "agreement_weight": 0.18,
-            "margin_weight": 0.09,
-            "min_agreement": 2,
-            "min_margin": 1.45,
-            "min_score": 1.78,
-            "allow_secondary": False,
-            "similarity_limit": 0.72,
-            "max_secondary_gap": 0.0,
-            "post_quantile": 0.24,
-            "cap": 8500,
-            "max_per_example": 1,
-            "source_order": list(DIVERSE_SOURCE_PRIOR),
-        },
-    }
+    base_profiles = {name: resolve_profile(profile) for name, profile in CQA_BASE_PROFILES.items()}
 
     packs = {}
     for name, profile in base_profiles.items():
         packs[name] = build_family(gold_records, candidate_tables, name, profile)
 
     boundary_rows = build_boundary_rows(gold_records, candidate_tables)
+    main_pack_config = {name: resolve_pack_config(config) for name, config in CQA_MAIN_PACK_CONFIG.items()}
     packs["judge_student_boundary_mix_balanced"] = band_select(
         boundary_rows,
-        cap=8500,
-        max_per_example=1,
-        band_column="boundary_band",
-        allowed_bands={"easy", "boundary"},
-        source_order=list(EXPERT_SOURCE_PRIOR),
+        cap=main_pack_config["judge_student_boundary_mix_balanced"]["cap"],
+        max_per_example=main_pack_config["judge_student_boundary_mix_balanced"]["max_per_example"],
+        band_column=main_pack_config["judge_student_boundary_mix_balanced"]["band_column"],
+        allowed_bands=main_pack_config["judge_student_boundary_mix_balanced"]["allowed_bands"],
+        source_order=main_pack_config["judge_student_boundary_mix_balanced"]["source_order"],
     )
     packs["judge_student_boundary_bridge_balanced"] = band_select(
         boundary_rows,
-        cap=10500,
-        max_per_example=2,
-        band_column="boundary_band",
-        allowed_bands={"easy", "boundary", "bridge"},
-        source_order=list(EXPERT_SOURCE_PRIOR),
+        cap=main_pack_config["judge_student_boundary_bridge_balanced"]["cap"],
+        max_per_example=main_pack_config["judge_student_boundary_bridge_balanced"]["max_per_example"],
+        band_column=main_pack_config["judge_student_boundary_bridge_balanced"]["band_column"],
+        allowed_bands=main_pack_config["judge_student_boundary_bridge_balanced"]["allowed_bands"],
+        source_order=main_pack_config["judge_student_boundary_bridge_balanced"]["source_order"],
     )
+    specialist_config = main_pack_config["judge_student_boundary_specialist_balanced"]
     packs["judge_student_boundary_specialist_balanced"] = band_select(
-        boundary_rows[boundary_rows["judge_source"].isin({"historical", "contrastive", "comparative", "if_else", "consensus"})],
-        cap=9000,
-        max_per_example=2,
-        band_column="boundary_band",
-        allowed_bands={"boundary", "bridge"},
-        source_order=list(EXPERT_SOURCE_PRIOR),
+        boundary_rows[boundary_rows["judge_source"].isin(specialist_config["filter_sources"])],
+        cap=specialist_config["cap"],
+        max_per_example=specialist_config["max_per_example"],
+        band_column=specialist_config["band_column"],
+        allowed_bands=specialist_config["allowed_bands"],
+        source_order=specialist_config["source_order"],
     )
 
     shortcut_rows = build_shortcut_rows(gold_records, candidate_tables)
+    shortcut_config = main_pack_config["judge_student_shortcut_aware_balanced"]
     packs["judge_student_shortcut_aware_balanced"] = band_select(
         shortcut_rows,
-        cap=9000,
-        max_per_example=2,
-        band_column="shortcut_band",
-        allowed_bands={"challenge", "bridge", "easy"},
-        band_mix=[("challenge", 0.35), ("bridge", 0.40), ("easy", 0.25)],
-        source_order=list(DIVERSE_SOURCE_PRIOR),
+        cap=shortcut_config["cap"],
+        max_per_example=shortcut_config["max_per_example"],
+        band_column=shortcut_config["band_column"],
+        allowed_bands=shortcut_config["allowed_bands"],
+        band_mix=shortcut_config["band_mix"],
+        source_order=shortcut_config["source_order"],
     )
 
     packs.update(build_derived_packs(packs))

@@ -77,6 +77,39 @@ class PaperConfigIntegrationTest(unittest.TestCase):
             config["boundary_mix_selection"]["esnli"],
         )
 
+
+    def test_esnli_judge_priors_are_loaded_from_config(self):
+        import build_judge_esnli as esnli
+
+        config = esnli.PAPER_CONFIG
+        self.assertEqual(esnli.ESNLI_SOURCE_PRIORS, config["esnli_source_priors"])
+        self.assertEqual(esnli.TYPE_PRIOR, config["esnli_source_priors"]["TYPE_PRIOR"])
+        self.assertEqual(
+            esnli.HYBRID_MULTIVIEW_TYPE_PRIOR,
+            config["esnli_source_priors"]["HYBRID_MULTIVIEW_TYPE_PRIOR"],
+        )
+
+    def test_cqa_pack_profiles_are_loaded_from_config(self):
+        config = cqa.PAPER_CONFIG
+        self.assertEqual(cqa.CQA_SOURCE_PRIORS, config["cqa_source_priors"])
+        self.assertEqual(cqa.SUPERCLEAN_SOURCE_PRIOR, config["cqa_source_priors"]["SUPERCLEAN_SOURCE_PRIOR"])
+        self.assertEqual(cqa.CQA_BASE_PROFILES, config["cqa_pack_profiles"]["base_profiles"])
+        self.assertEqual(cqa.CQA_MAIN_PACK_CONFIG, config["cqa_pack_profiles"]["main_packs"])
+
+    def test_cqa_derived_pack_settings_are_loaded_from_config(self):
+        config = cqa.PAPER_CONFIG
+        self.assertEqual(cqa.CQA_SHORTCUT_SCORING_PROFILE, config["cqa_shortcut_scoring_profile"])
+        self.assertEqual(cqa.CQA_SHORTCUT_SECONDARY_CONFIG, config["cqa_shortcut_secondary"])
+        self.assertEqual(cqa.CQA_DERIVED_PACK_CONFIG, config["cqa_derived_pack_profiles"])
+
+    def test_esnli_strategy_settings_are_loaded_from_config(self):
+        import build_judge_esnli as esnli
+
+        config = esnli.PAPER_CONFIG
+        self.assertEqual(esnli.ESNLI_LENGTH_SCORE_CONFIG, config["esnli_length_score"])
+        self.assertEqual(esnli.ESNLI_SCORING_STRATEGIES, config["esnli_scoring_strategies"])
+        self.assertEqual(esnli.ESNLI_KEEP_RULES, config["esnli_keep_rules"])
+
     def test_cqa_boundary_scoring_uses_paper_config_objects(self):
         config = cqa.PAPER_CONFIG
 
