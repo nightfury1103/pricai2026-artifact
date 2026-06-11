@@ -23,6 +23,7 @@ build_cqa_boundary_score_ablation.py    CQA score-component ablation
 tests/                                  Unit tests for selection and ablation logic
 results/                                Small summary files for ablation reports
 docs/                                   Data and anonymization notes
+config.json                             Paper-notation hyperparameters and implementation values
 ```
 
 Large datasets, checkpoints, logs, and generated intermediate CSV files are intentionally not included in this anonymous review artifact.
@@ -38,6 +39,10 @@ pip install -r requirements.txt
 ```
 
 For GPU training, install a PyTorch build that matches the local CUDA driver before installing the remaining requirements. The original experiments used T5-family models through Hugging Face Transformers.
+
+## Paper Configuration
+
+The hyperparameters used by the boundary-aware scoring function are listed in `config.json` using the same notation as the paper, including `alpha`, `beta`, `gamma`, `delta`, `eta`, `lambda`, `mu`, `nu`, `rho`, the source prior `pi_D`, boundary thresholds, and the student-training loss trade-off.
 
 ## Data Layout
 

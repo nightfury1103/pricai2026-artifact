@@ -1,0 +1,208 @@
+{
+  "artifact": {
+    "paper": "Boundary-Aware Rationale Selection for Step-by-Step Distillation",
+    "conference": "PRICAI 2026",
+    "purpose": "Expose the implementation hyperparameters using the notation and names used in the paper."
+  },
+  "rationale_quality_score": {
+    "paper_equation": "Q(c_i,k) = alpha*S_source + beta*S_ground + gamma*S_cue + delta*S_explicit + eta*S_format + lambda*S_brief + mu*A_i + nu*R_i + rho*M_i",
+    "paper_coefficient_names": [
+      "alpha",
+      "beta",
+      "gamma",
+      "delta",
+      "eta",
+      "lambda",
+      "mu",
+      "nu",
+      "rho"
+    ],
+    "table_2_coefficients": {
+      "alpha": 1.0,
+      "beta": 0.55,
+      "gamma": 0.22,
+      "delta": 0.2,
+      "eta": 1.0,
+      "lambda": 1.0,
+      "mu": 0.12,
+      "nu": 0.08,
+      "rho": 0.03
+    },
+    "code_component_mapping": {
+      "alpha": "source",
+      "beta": "ground",
+      "gamma": "cue",
+      "delta": "explicit",
+      "eta": "format",
+      "lambda": "brief",
+      "mu": "agreement_count",
+      "nu": "agreement_ratio",
+      "rho": "margin"
+    },
+    "implementation_file": "build_boundary_focus_pack.py",
+    "signal_definitions": {
+      "S_source": "pi_D(y_i, s_i,k)",
+      "S_ground": "token overlap between rationale and input support tokens",
+      "S_cue": "count of label-specific teaching cues found in the rationale",
+      "S_explicit": "1.0 if the selected label appears in the rationale, otherwise 0.0",
+      "S_format": "0.25 if the rationale contains 'the correct answer' or 'so the answer is', otherwise 0.0",
+      "S_brief": "0.25 if 10 <= rationale word count <= 96; -0.15 if word count > 128; otherwise 0.0",
+      "A_i": "agreement_count",
+      "R_i": "agreement_count / total_candidates",
+      "M_i": "vote_margin"
+    }
+  },
+  "source_prior_pi_D": {
+    "paper_name": "pi_D(y, s)",
+    "implementation_name": "BOUNDARY_SOURCE_PRIOR",
+    "implementation_file": "build_boundary_focus_pack.py",
+    "values": {
+      "entailment": {
+        "historical": 1.0,
+        "consensus": 0.98,
+        "contrastive": 0.95,
+        "causal": 0.92,
+        "neutral": 0.88,
+        "if_else": 0.74,
+        "comparative": 0.7
+      },
+      "neutral": {
+        "if_else": 1.0,
+        "comparative": 0.99,
+        "neutral": 0.96,
+        "contrastive": 0.9,
+        "causal": 0.84,
+        "consensus": 0.82,
+        "historical": 0.72
+      },
+      "contradiction": {
+        "comparative": 1.0,
+        "contrastive": 0.99,
+        "causal": 0.97,
+        "neutral": 0.89,
+        "consensus": 0.84,
+        "historical": 0.74,
+        "if_else": 0.7
+      }
+    }
+  },
+  "difficulty_band_thresholds": {
+    "paper_equation": "z_i = easy if m_i >= tau_easy_m and rho_i >= tau_easy_rho; boundary if m_i >= tau_boundary_m and a_i >= tau_boundary_a; hard otherwise",
+    "esnli_boundary_mix": {
+      "implementation_file": "build_boundary_focus_pack.py",
+      "easy": {
+        "tau_easy_m": 2.1,
+        "tau_easy_rho": null,
+        "tau_easy_a": 5
+      },
+      "boundary": {
+        "tau_boundary_m": 1.1,
+        "tau_boundary_a": 2
+      },
+      "hard": "otherwise",
+      "retained_bands_for_boundary_mix": [
+        "easy",
+        "boundary"
+      ]
+    },
+    "cqa_boundary_mix": {
+      "implementation_file": "build_judge_cqa_outstanding_pack.py",
+      "easy": {
+        "tau_easy_m": 2.4,
+        "tau_easy_rho": null,
+        "tau_easy_a": 5
+      },
+      "boundary": {
+        "tau_boundary_m": 1.6,
+        "tau_boundary_a": 3
+      },
+      "hard": "otherwise",
+      "retained_bands_for_boundary_mix": [
+        "easy",
+        "boundary"
+      ]
+    }
+  },
+  "boundary_mix_selection": {
+    "paper_name": "Boundary-Mix",
+    "esnli": {
+      "implementation_file": "build_boundary_focus_pack.py",
+      "cap_per_label": 3200,
+      "max_per_example": 1,
+      "allowed_bands": [
+        "easy",
+        "boundary"
+      ]
+    },
+    "cqa": {
+      "implementation_file": "build_judge_cqa_outstanding_pack.py",
+      "cap": 8500,
+      "max_per_example": 1,
+      "allowed_bands": [
+        "easy",
+        "boundary"
+      ]
+    }
+  },
+  "cqa_boundary_scoring_profile": {
+    "implementation_file": "build_judge_cqa_outstanding_pack.py",
+    "source_prior": {
+      "causal": 1.0,
+      "if_else": 0.99,
+      "neutral": 0.98,
+      "contrastive": 0.975,
+      "historical": 0.94,
+      "consensus": 0.84,
+      "comparative": 0.8
+    },
+    "preferred_sources": [
+      "contrastive",
+      "if_else",
+      "causal",
+      "neutral"
+    ],
+    "ideal_word_max": 96,
+    "hard_word_max": 128,
+    "overlap_weight": 0.62,
+    "agreement_weight": 0.18,
+    "margin_weight": 0.1,
+    "cue_weight": 0.08,
+    "format_weight": 0.08,
+    "explicit_weight": 0.2,
+    "agreement_ratio_weight": 0.12,
+    "preferred_source_bonus": 0.12,
+    "brevity_positive": 0.25,
+    "brevity_long_penalty": -0.18
+  },
+  "student_training_loss": {
+    "paper_equation": "L = lambda*L_label + (1-lambda)*L_rationale",
+    "paper_name": "lambda",
+    "implementation_argument": "--alpha",
+    "default_value": 0.5,
+    "implementation_files": [
+      "run.py",
+      "model_utils.py",
+      "train_utils.py"
+    ],
+    "note": "The paper uses lambda for the training loss trade-off. The code uses --alpha for the same value. This is separate from the lambda coefficient for S_brief in Eq. (7)."
+  },
+  "training_defaults": {
+    "from_pretrained": "google/t5-v1_1-base",
+    "model_type": "task_prefix",
+    "label_type": "gt",
+    "llm": null,
+    "subsample": 1.0,
+    "alpha": 0.5,
+    "max_steps": 10000,
+    "eval_steps": 250,
+    "batch_size": 64,
+    "optimizer_name": "AdamW",
+    "learning_rate": 0.00005,
+    "max_input_length": 1024,
+    "grad_steps": 1,
+    "gen_max_len": 64,
+    "gold_finetune": false,
+    "gold_max_steps": 1000,
+    "gold_learning_rate": 0.00001
+  }
+}
