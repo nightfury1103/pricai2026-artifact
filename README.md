@@ -1,4 +1,4 @@
-# PRICAI 2026 Anonymous Code Artifact
+# Not All Rationales Are Equal: Boundary-Aware Selection for LLM-to-Student Distillation Anonymous Code Artifact
 
 This repository contains an anonymized implementation for the PRICAI 2026 submission. It provides the training, evaluation, rationale-pack construction, and ablation scripts used for the experiments.
 
@@ -40,7 +40,7 @@ pip install -r requirements.txt
 
 For GPU training, install a PyTorch build that matches the local CUDA driver before installing the remaining requirements. The original experiments used T5-family models through Hugging Face Transformers.
 
-## Paper Configuration
+## Model's Configuration
 
 The hyperparameters used by the boundary-aware scoring function are listed in `config.json` using the same notation as the paper, including `alpha`, `beta`, `gamma`, `delta`, `eta`, `lambda`, `mu`, `nu`, `rho`, the source prior `pi_D`, boundary thresholds, and the student-training loss trade-off.
 
