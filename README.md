@@ -1,4 +1,4 @@
-# Not All Rationales Are Equal: Boundary-Aware Selection for LLM-to-Student Distillation Anonymous Code Artifact
+# Not All Rationales Are Equal: Boundary-Aware Selection for LLM-to-Student Distillation
 
 This repository contains an anonymized implementation for the PRICAI 2026 submission. It provides the training, evaluation, rationale-pack construction, and ablation scripts used for the experiments.
 
